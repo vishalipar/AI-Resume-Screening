@@ -1,0 +1,48 @@
+{% extends "screening.html" %}
+
+{% block title %}AI Resume Screening{% endblock %}
+
+{% block content %}
+<div class="p-9 bg-white rounded-2xl shadow-lg">
+    <h1 class='flex items-center gap-3 text-2xl text-stone-700 font-bold'>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-up-icon lucide-file-up text-blue-700"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M12 12v6"/><path d="m15 15-3-3-3 3"/></svg>
+        Upload Documents for AI Analysis
+    </h1>
+    
+    <div class="upload-section rounded-lg">
+        <h3 class='text-md text-stone-600'>Upload Job Description</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="jd_file" accept=".pdf,.docx,.txt" required>
+            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg' type="submit">Upload JD</button>
+        </form>
+    </div>
+
+    {% if jd_text %}
+    <div class="upload-section rounded-lg">
+        <h3 class='text-3xl text-stone-800'>Uploaded Job Description:</h3>
+        <p class='text-stone-700 mt-4'>{{ jd_text }}</p>
+    </div>
+
+    <div class="upload-section rounded-lg">
+        <h3 class='text-md text-stone-600'>Upload Resumes</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="resume_files" accept=".pdf,.docx" multiple required>
+            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg' type="submit">Screen Resumes</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if results %}
+    <div class="upload-section rounded-lg">
+        <h3 class='text-xl text-stone-700'>Results:</h3>
+        {% for result in results %}
+        <div class="result text-stone-800">
+            <strong>{{ result.name }}</strong> — Match Score: {{ result.score }}%
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
