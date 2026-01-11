@@ -63,3 +63,11 @@ def home(request):
         context['jd_text'] = request.session['jd_text'][:300] + "..."
     
     return render(request, 'home.html', context)
+    
+def candidates(request):
+    candidates = 3
+    
+    context = {
+        'candidates':candidates,
+    }
+    return render(request, 'candidates.html', context)
