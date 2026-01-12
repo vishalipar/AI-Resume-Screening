@@ -7,7 +7,7 @@ class UserInfo(models.Model):
     email = models.EmailField()
     score = models.IntegerField()
     skills = models.JSONField(default=list)
-    # resume = models.FileField(upload_to='resumes/')
+    resume = models.FileField(upload_to='resumes/')
     status = models.BooleanField(default=False)
     
     def __str__(self):

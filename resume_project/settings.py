@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'resume_screening',
+    
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
