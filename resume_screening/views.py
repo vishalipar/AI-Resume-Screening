@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 import pdfplumber
 import docx
@@ -6,6 +6,7 @@ import spacy
 import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from .models import UserInfo
 
 nlp = spacy.load("en_core_web_sm")
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -63,11 +64,17 @@ def home(request):
         context['jd_text'] = request.session['jd_text'][:300] + "..."
     
     return render(request, 'home.html', context)
-    
+
 def candidates(request):
-    candidates = 3
+    users = UserInfo.objects.all()
+    candidates = len(users)
     
     context = {
         'candidates':candidates,
+        'users':users,
     }
     return render(request, 'candidates.html', context)
+    
+def delete_user(request, user_id):
+    UserInfo.objects.filter(id = user_id).delete()
+    return redirect('candidates')

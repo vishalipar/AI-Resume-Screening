@@ -38,24 +38,30 @@
                 </tr>
             </thead>
             <tbody class=''>
+                {% for user in users %}
                 <tr class='text-stone-700'>
                     <td class='flex flex-col'>
-                        <span class='text-lg font-semibold'>John Smith</span>
-                        <span class='text-[12px] text-stone-500'>john.smith@email.com</span>
+                        <span class='text-lg font-semibold'>{{ user.name }}</span>
+                        <span class='text-[12px] text-stone-500'>{{ user.email }}</span>
                     </td>
                     <td class='text-sm font-semibold'>
-                        <span class='px-2 py-1 text-green-800 bg-green-200 rounded-lg'>92%</span>
+                        <span class='px-2 py-1 {% if user.score >= 80 %}text-green-800 bg-green-200 {% else %}text-amber-800 bg-amber-100{% endif %} rounded-lg'>
+                            {{ user.score }}%
+                        </span>
                     </td>
                     <td>
-                        <p class='flex gap-2 text-[12px] text-stone-500'>
-                            <span>Python</span>
-                            <span>Django</span>
-                            <span>PostgreySQL</span>
-                            <span>AWS</span>
+                        <p class='flex gap-3 text-[12px] text-stone-500'>
+                            {% for skill in user.skills %}
+                            <span>{{ skill }}</span>
+                            {% endfor %}
                         </p>
                     </td>
                     <td>
-                        <p class='text-[13px] text-green-800 font-semibold bg-green-200 px-3 py-1 w-fit rounded-lg'>Shortlisted</p>
+                        <p class='text-[13px] font-semibold w-fit'>
+                            {% if user.status %} <span class='text-green-800 bg-green-200 px-3 py-1 rounded-lg'>Shortlisted</span> 
+                            {% else %} <span class='text-amber-800 bg-amber-100 px-3 py-1 rounded-lg'>Review</span>
+                            {% endif %}
+                        </p>
                     </td>
                     <td>
                         <div class='flex items-center gap-5'>
@@ -65,39 +71,13 @@
                             <span class='cursor-pointer hover:text-blue-700' title='Contact'>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
                             </span>
-                        </div>
-                    </td>
-                </tr>
-                <tr class='text-stone-700'>
-                    <td class='flex flex-col'>
-                        <span class='text-lg font-semibold'>John Smith</span>
-                        <span class='text-[12px] text-stone-500'>john.smith@email.com</span>
-                    </td>
-                    <td class='text-sm font-semibold'>
-                        <span class='px-2 py-1 text-green-800 bg-green-200 rounded-lg'>92%</span>
-                    </td>
-                    <td>
-                        <p class='flex gap-2 text-[12px] text-stone-500'>
-                            <span>Python</span>
-                            <span>Django</span>
-                            <span>PostgreySQL</span>
-                            <span>AWS</span>
-                        </p>
-                    </td>
-                    <td>
-                        <p class='text-[13px] text-green-800 font-semibold bg-green-200 px-3 py-1 w-fit rounded-lg'>Shortlisted</p>
-                    </td>
-                    <td>
-                        <div class='flex items-center gap-5'>
-                            <span class='cursor-pointer hover:text-blue-700' title='View'>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-icon lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
-                            </span>
-                            <span class='cursor-pointer hover:text-blue-700' title='Contact'>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+                            <span class='cursor-pointer hover:text-blue-700' title='Remove' onclick = "if(confirm('Delete this user?')) window.location.href = '{% url 'delete_user' user.id %}'">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-icon lucide-trash"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             </span>
                         </div>
                     </td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
