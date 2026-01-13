@@ -11,16 +11,16 @@
             <input type="search" name="search" id="" placeholder='Search candidates...' class='text-sm p-2 w-full bg-stone-100 rounded-lg outline-none'>
         </div>
         <div class="filters flex justify-end gap-2 w-[20vw] h-full text-sm">
-            <button class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
+            <button onclick = "filterByScore('all')" class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
                 All
             </button>
-            <button class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
+            <button onclick = "filterByScore(80,100)" class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
                 80%+
             </button>
-            <button class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
+            <button onclick = "filterByScore(60,79)" class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
                 60-79%
             </button>
-            <button class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
+            <button onclick = "filterByScore(0,59)" class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
                 <60%
             </button>
         </div>
@@ -148,6 +148,30 @@
             row.style.display = name.includes(query) ? '' : 'none';
         });
     });
+</script>
+
+{% comment %} filter candidates {% endcomment %}
+<script>
+    function filterByScore(min, max) {
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            if (min === 'all') {
+                row.style.display = '';
+                return;
+            }
+            
+            // Get score from the score column
+            const scoreText = row.querySelectorAll('td')[1].textContent.trim();
+            const score = parseInt(scoreText.replace('%', ''));
+            
+            if (score >= min && score <= max) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
 </script>
 
 <script>
