@@ -68,7 +68,7 @@
                             <a href="{{ user.resume.url }}" target="_blank" class='cursor-pointer hover:text-blue-700' title='View'>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-icon lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
                             </a>
-                            <span class='cursor-pointer hover:text-blue-700' title='Contact'>
+                            <span onclick="openEmailModal('{{ user.email }}', '{{ user.name }}')" class='cursor-pointer hover:text-blue-700' title='Contact'>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
                             </span>
                             <span class='cursor-pointer hover:text-blue-700' title='Remove' onclick = "if(confirm('Delete this user?')) window.location.href = '{% url 'delete_user' user.id %}'">
@@ -95,4 +95,36 @@
     <p class='flex justify-center mt-9 mb-4 text-stone-400'>No Candidates</p>
     {% endif %}
 </div>
+
+<!-- Email Modal -->
+<div id="emailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-9 rounded-lg w-[30vw]">
+        <h3 class="text-xl text-stone-600 font-semibold mb-4">Send Email</h3>
+        <form method="post" action="{% url 'send_email' %}">
+            {% csrf_token %}
+            <input type="hidden" name="candidate_id" id="candidate_id">
+            <input type="text" name="to_email" id="to_email" class="w-full p-2 text-stone-500 border mb-3 rounded-lg" readonly>
+            <input type="text" name="subject" value="Interview Invitation" class="w-full p-2 border mb-3 text-stone-700 rounded-lg">
+            <textarea name="message" id="message" rows="6" class="w-full p-2 text-stone-700 border mb-3 rounded-lg"></textarea>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-800 transition-colors duration-[300ms] text-white px-4 py-2 rounded-lg">Send</button>
+                <button type="button" onclick="closeEmailModal()" class="bg-gray-300 hover:bg-gray-400 transition-colors duration-[300ms] px-4 py-2 rounded-lg">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    function openEmailModal(email, name) {
+        document.getElementById('to_email').value = email;
+        document.getElementById('message').value = `Hi ${name},\n\nWe reviewed your resume and would like to schedule an interview.\nScheduled Date :-\n\nBest regards`;
+        document.getElementById('emailModal').classList.remove('hidden');
+    }
+
+    function closeEmailModal() {
+        document.getElementById('emailModal').classList.add('hidden');
+    }
+</script>
+
 {% endblock %}

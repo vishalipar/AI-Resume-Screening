@@ -7,6 +7,9 @@ import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from .models import UserInfo
+from django.core.mail import send_mail
+from django.contrib import messages
+from resume_project.settings import EMAIL_HOST_USER
 
 nlp = spacy.load("en_core_web_sm")
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -113,3 +116,22 @@ def candidates(request):
 def delete_user(request, user_id):
     UserInfo.objects.filter(id = user_id).delete()
     return redirect('candidates')
+    
+def send_email_view(request):
+    if request.method == 'POST':
+        to_email = request.POST.get('to_email')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        try:
+            send_mail(
+                subject,
+                message,
+                EMAIL_HOST_USER,
+                [to_email],
+                fail_silently = False,
+            )
+            messages.success(request, 'Email sent successfully.')
+        except Exception as e:
+            messages.error(request, 'Failed to send email.')
+            
+        return redirect('candidates')
