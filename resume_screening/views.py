@@ -32,6 +32,35 @@ def match_score(jd_text, resume_text):
     res_vec = model.encode(resume_text)
     return float(cosine_similarity([jd_vec], [res_vec])[0][0]) * 100
 
+def extract_resume_details(resume_text):
+    doc = nlp(resume_text)
+    
+    # Extract email
+    email_match = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', resume_text)
+    email = email_match.group(0) if email_match else "Not found"
+    
+    # name = email.split('@')[0]
+    name = re.sub(r'[^a-zA-Z\s]', '', email.split('@')[0]).capitalize()
+    
+    # Extract skills (predefined list matching)
+    skills_list = [
+        'Python', 'Django', 'JavaScript', 'React', 'Node.js', 'Java', 'C++', 
+        'SQL', 'PostgreSQL', 'MongoDB', 'AWS', 'Docker', 'Kubernetes', 
+        'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch',
+        'Git', 'HTML', 'CSS', 'REST API', 'Flask', 'FastAPI', 'HR Software Proficiency', 'Email Management', 'HRIS Management', 'Data Management'
+    ]
+    
+    # Find skills present in resume
+    resume_lower = resume_text.lower()
+    found_skills = [skill for skill in skills_list if skill.lower() in resume_lower]
+    
+    return {
+        'name': name,
+        'email': email,
+        'skills': found_skills[:5]  # Top 5 skills
+    }
+    
+    
 def home(request):
     context = {'jd_text': None, 'results': []}
     
@@ -51,7 +80,13 @@ def home(request):
             results = []
             for resume_file in resume_files:
                 resume_text = extract_text(resume_file)
+                details = extract_resume_details(resume_text)
                 score = match_score(jd_text, resume_text)
+                if score >= 80:
+                    status = True
+                else:
+                    status = False
+                UserInfo.objects.create(name = details['name'], email = details['email'], skills = details['skills'], score = score, resume = resume_file, status = status)
                 results.append({
                     'name': resume_file.name,
                     'score': f"{score:.2f}"
