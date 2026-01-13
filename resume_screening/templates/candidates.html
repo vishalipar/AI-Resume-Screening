@@ -8,7 +8,7 @@
         <p class='text-2xl text-stone-700 font-semibold'>Candidates Shortlist</p>
         <div class="flex items-center gap-2 w-[20vw] pl-3 text-stone-600 bg-stone-100 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
-            <input type="search" name="search" id="" placeholder='Search candidates...' class='text-sm p-2 bg-stone-100 rounded-lg outline-none'>
+            <input type="search" name="search" id="" placeholder='Search candidates...' class='text-sm p-2 w-full bg-stone-100 rounded-lg outline-none'>
         </div>
         <div class="filters flex justify-end gap-2 w-[20vw] h-full text-sm">
             <button class='px-4 py-2 text-stone-500 border border-stone-300 rounded-lg'>
@@ -138,6 +138,17 @@
     100%{opacity:0; transform:translateY(20px);}
   }
 </style>
+
+{% comment %} search candidates  {% endcomment %}
+<script>
+    document.querySelector('input[name="search"]').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('tbody tr').forEach(row => {
+            const name = row.querySelector('td:first-child span').textContent.toLowerCase();
+            row.style.display = name.includes(query) ? '' : 'none';
+        });
+    });
+</script>
 
 <script>
     function openEmailModal(email, name) {
