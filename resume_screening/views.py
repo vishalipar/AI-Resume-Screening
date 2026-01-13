@@ -10,6 +10,9 @@ from .models import UserInfo
 from django.core.mail import send_mail
 from django.contrib import messages
 from resume_project.settings import EMAIL_HOST_USER
+from openpyxl import Workbook
+from django.http import HttpResponse
+
 
 nlp = spacy.load("en_core_web_sm")
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -135,3 +138,31 @@ def send_email_view(request):
             messages.error(request, 'Failed to send email.')
             
         return redirect('candidates')
+        
+def export_candidates(request):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Candidates'
+    
+    headers = ['Name', 'Email','Match Score', 'Skills', 'Status']
+    ws.append(headers)
+    
+    candidates = UserInfo.objects.all()
+    for candidate in candidates:
+        skills = ', '.join(candidate.skills) if isinstance(candidate.skills, list) else candidate.skills
+        status = 'Shortlisted' if candidate.status else 'Review'
+        ws.append([
+            candidate.name,
+            candidate.email,
+            f"{candidate.score}%",
+            skills,
+            status
+        ])
+        
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=candidates.xlsx'
+    
+    wb.save(response)
+    return response

@@ -6,4 +6,5 @@ urlpatterns = [
     path('candidates/', views.candidates, name='candidates'),
     path('delete/<int:user_id>/', views.delete_user, name='delete_user'),
     path('send-email/', views.send_email_view, name='send_email'),
+    path('export/', views.export_candidates, name='export_candidates'),
 ]
