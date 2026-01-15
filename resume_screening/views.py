@@ -7,11 +7,12 @@ import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from .models import UserInfo
-from django.core.mail import send_mail
+from django.core.mail import send_mail, send_mass_mail
 from django.contrib import messages
 from resume_project.settings import EMAIL_HOST_USER
 from openpyxl import Workbook
 from django.http import HttpResponse
+from datetime import datetime
 
 
 nlp = spacy.load("en_core_web_sm")
@@ -166,3 +167,40 @@ def export_candidates(request):
     
     wb.save(response)
     return response
+
+def schedule_interviews(request):
+    if request.method == 'POST':
+        candidate_ids = request.POST.getlist('candidates')
+        interview_datetime = request.POST.get('interview_datetime')
+        subject = request.POST.get('subject')
+        message_template = request.POST.get('message')
+        
+        # Format datetime
+        dt = datetime.strptime(interview_datetime, '%Y-%m-%dT%H:%M')
+        formatted_datetime = dt.strftime('%B %d, %Y at %I:%M %p')
+        
+        # Replace placeholder in message
+        message = message_template.replace('[Will be filled automatically]', formatted_datetime)
+        
+        # Get candidates
+        candidates = UserInfo.objects.filter(id__in=candidate_ids)
+        
+        # Prepare emails
+        emails = []
+        for candidate in candidates:
+            personalized_message = message.replace('Dear Candidate', f'Dear {candidate.name}')
+            emails.append((
+                subject,
+                personalized_message,
+                EMAIL_HOST_USER,  # From email
+                [candidate.email]
+            ))
+        
+        # Send emails
+        try:
+            send_mass_mail(emails, fail_silently=False)
+            messages.success(request, f'Interview invitations sent to {len(emails)} candidates!')
+        except Exception as e:
+            messages.error(request, f'Failed to send emails: {str(e)}')
+        
+        return redirect('candidates')
