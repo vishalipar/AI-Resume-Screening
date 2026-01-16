@@ -204,3 +204,6 @@ def schedule_interviews(request):
             messages.error(request, f'Failed to send emails: {str(e)}')
         
         return redirect('candidates')
+        
+def dashboard(request):
+    return render(request, 'dashboard.html')

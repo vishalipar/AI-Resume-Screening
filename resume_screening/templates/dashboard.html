@@ -1,0 +1,57 @@
+{% extends "screening.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex justify-between h-[20vh] w-full">
+    <div class="w-[17vw] h-full bg-white rounded-xl">
+        <div class="px-2 py-6">
+            <div class="flex justify-between items-center ">
+                <p class='text-md text-stone-500 font-semibold'>TOTAL CANDIDATES</p>
+                <div class="bg-blue-50 p-2 rounded-lg">
+                    <img class='h-6 w-6' src="{% static 'images/group.png' %}" alt="candidates">
+                </div>
+            </div>
+            <p class='text-3xl text-stone-700 font-semibold ml-3 mt-6'>0</p>
+        </div>
+    </div>
+    <div class="w-[17vw] h-full bg-white rounded-xl">
+        <div class="px-2 py-6">
+            <div class="flex justify-between items-center ">
+                <p class='text-md text-stone-500 font-semibold'>SHORTLISTED</p>
+                <div class="bg-green-100 p-2 rounded-lg">
+                    <img class='h-6 w-6' src="{% static 'images/check.png' %}" alt="candidates">
+                </div>
+            </div>
+            <p class='text-3xl text-stone-700 font-semibold ml-3 mt-6'>0</p>
+        </div>
+    </div>
+    <div class="w-[17vw] h-full bg-white rounded-xl">
+        <div class="px-2 py-6">
+            <div class="flex justify-between items-center ">
+                <p class='text-md text-stone-500 font-semibold'>REVIEW</p>
+                <div class="bg-red-50 p-2 rounded-lg">
+                    <img class='h-6 w-6' src="{% static 'images/danger-sign.png' %}" alt="candidates">
+                </div>
+            </div>
+            <p class='text-3xl text-stone-700 font-semibold ml-3 mt-6'>0</p>
+        </div>
+    </div>
+    <div class="w-[17vw] h-full bg-white rounded-xl">
+        <div class="px-2 py-6">
+            <div class="flex justify-between items-center ">
+                <p class='text-md text-stone-500 font-semibold'>AVG. MATCH SCORE</p>
+                <div class="bg-amber-50 p-2 rounded-lg">
+                    <img class='h-5 w-5' src="{% static 'images/percentage.png' %}" alt="candidates">
+                </div>
+            </div>
+            <p class='text-3xl text-stone-700 font-semibold ml-3 mt-6'>0%</p>
+        </div>
+    </div>
+</div>
+<div class="h-[52vh] w-full p-5 bg-white rounded-xl mt-9">
+    <p class='text-stone-700 font-semibold'>Top 5 Candidates - Match Score</p>
+</div>
+
+{% endblock %}
