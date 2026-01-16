@@ -13,6 +13,7 @@ from resume_project.settings import EMAIL_HOST_USER
 from openpyxl import Workbook
 from django.http import HttpResponse
 from datetime import datetime
+from django.db.models import Avg
 
 
 nlp = spacy.load("en_core_web_sm")
@@ -206,4 +207,25 @@ def schedule_interviews(request):
         return redirect('candidates')
         
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    candidates = UserInfo.objects.all().order_by('-score')
+    top_candidates = candidates[:5]
+    
+    total_candidates = len(candidates)
+    shortlisted = 0
+    review = 0
+    for candidate in candidates:
+        if candidate.status == True:
+            shortlisted += 1
+        else:
+            review += 1
+    avg_score = UserInfo.objects.aggregate(Avg('score'))['score__avg'] or 0
+    
+    context = {
+        'candidates':candidates,
+        'top_candidates':top_candidates,
+        'total_candidates':total_candidates,
+        'shortlisted':shortlisted,
+        'review':review,
+        'avg_score':avg_score,
+    }
+    return render(request, 'dashboard.html', context)
