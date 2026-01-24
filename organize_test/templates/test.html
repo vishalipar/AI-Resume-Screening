@@ -30,5 +30,52 @@
         </div>
     </div>
 </div>
+<div class="h-[70vh] w-full p-9 mt-9 bg-white rounded-2xl shadow-lg">
+    <div class="flex gap-12 text-lg text-stone-500 border-b border-stone-300">
+        <button class='tab px-4 py-2 border-b-2 text-blue-600 border-blue-600 font-semibold hover:text-blue-600 transition' onclick='switchTab("create-test")'>Create Test</button>
+        <button class='tab px-4 py-2 border-b-2 border-transparent hover:text-blue-600 transition' onclick='switchTab("questions")'>Question Bank</button>
+        <button class='tab px-4 py-2 border-b-2 border-transparent hover:text-blue-600 transition' onclick='switchTab("assign")'>Assign to Candidates</button>
+        <button class='tab px-4 py-2 border-b-2 border-transparent hover:text-blue-600 transition' onclick='switchTab("results")'>View Results</button>
+    </div>
+    <div id='create-test' class="tab-content">
+        <div class="card mt-6">
+            <p class='text-2xl text-stone-700 font-semibold'>Create New Test</p>
+        </div>
+    </div>
+    <div id='questions' class="tab-content hidden">
+        <div class="card mt-6">
+            <p class='text-2xl text-stone-700 font-semibold'>Question Bank</p>
+        </div>
+    </div>
+    <div id='assign' class="tab-content hidden">
+        <div class="card mt-6">
+            <p class='text-2xl text-stone-700 font-semibold'>Assign Test To Candidates</p>
+        </div>
+    </div>
+    <div id='results' class="tab-content hidden">
+        <div class="card mt-6">
+            <p class='text-2xl text-stone-700 font-semibold'>Test Results</p>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function switchTab(tabName){
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => content.classList.add('hidden'));
+        
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.classList.remove('text-blue-600', 'border-blue-600', 'font-semibold');
+            tab.classList.add('border-transparent');
+        });
+        
+        document.getElementById(tabName).classList.remove('hidden');
+        
+        event.target.classList.add('text-blue-600', 'border-blue-600', 'font-semibold');
+        event.target.classList.remove('border-transparent');
+    }
+</script>
 
 {% endblock %}
