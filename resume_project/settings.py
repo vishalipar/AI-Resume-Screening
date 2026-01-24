@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'resume_screening',
+    'organize_test',
     
     'django_cleanup.apps.CleanupConfig',
 ]
