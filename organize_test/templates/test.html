@@ -30,7 +30,7 @@
         </div>
     </div>
 </div>
-<div class="h-[70vh] w-full p-9 mt-9 bg-white rounded-2xl shadow-lg">
+<div class="min-h-[50vh] w-full p-9 mt-9 bg-white rounded-2xl shadow-lg">
     <div class="flex gap-12 text-lg text-stone-500 border-b border-stone-300">
         <button class='tab px-4 py-2 border-b-2 text-blue-600 border-blue-600 font-semibold hover:text-blue-600 transition' onclick='switchTab("create-test")'>Create Test</button>
         <button class='tab px-4 py-2 border-b-2 border-transparent hover:text-blue-600 transition' onclick='switchTab("questions")'>Question Bank</button>
@@ -39,7 +39,69 @@
     </div>
     <div id='create-test' class="tab-content">
         <div class="card mt-6">
-            <p class='text-2xl text-stone-700 font-semibold'>Create New Test</p>
+            <p class='flex gap-3 text-2xl text-stone-700 font-semibold'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-notebook-pen-icon lucide-notebook-pen"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg>
+                Create New Test
+            </p>
+            <form method='post' action="" class='mt-6'>
+                {% csrf_token %}
+                <div class="flex flex-col gap-6">
+                    <div class="flex flex-col gap-2">
+                        <p class='text-stone-500 font-semibold'>Test Title</p>
+                        <input type="text" name="title" id="" placeholder="e.g., Python Developer Assessment" class='w-full py-2 px-3 placeholder:text-stone-500 border border-stone-200 rounded-lg'>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex flex-col gap-2 w-1/2">
+                            <p class='text-stone-500 font-semibold'>Position</p>
+                            <select name="" id="" class='py-2 px-3 w-full border border-stone-200 rounded-lg'>
+                                <option value="" selected>Select Position</option>
+                                <option value="">Python Developer</option>
+                                <option value="">Frontend Developer</option>
+                                <option value="">Full Stack Developer</option>
+                                <option value="">Data Analyst</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2 w-1/2">
+                            <p class='text-stone-500 font-semibold'>Difficulty Level</p>
+                            <select name="" id="" class='py-2 px-3 w-full border border-stone-200 rounded-lg'>
+                                <option value="" selected>Select Difficulty</option>
+                                <option value="">Easy</option>
+                                <option value="">Medium</option>
+                                <option value="">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex flex-col gap-2 w-1/2">
+                            <p class='text-stone-500 font-semibold'>Duration (minutes)</p>
+                            <input type="number" name="" id="" placeholder='60' class='py-2 px-3 border border-stone-200 placeholder:text-stone-500 rounded-lg'>
+                        </div>
+                        <div class="flex flex-col gap-2 w-1/2">
+                            <p class='text-stone-500 font-semibold'>Passing Score (%)</p>
+                            <input type="number" name="" id="" placeholder='70' class='py-2 px-3 border border-stone-200 placeholder:text-stone-500 rounded-lg'>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class='text-stone-500 font-semibold'>Test Description</p>
+                        <textarea id="" placeholder="Enter test instructions and description..." class='w-full py-2 px-3 border border-stone-200 rounded-lg placeholder:text-stone-500'></textarea>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class='text-stone-500 font-semibold'>Test Type</p>
+                        <div class="flex gap-6 text-stone-800">
+                            <div class="flex gap-2">
+                                <input type="checkbox" name="mcq" id=""> MCQ
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="checkbox" name="coding" id=""> Coding
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="checkbox" name="descriptive" id=""> Descriptive
+                            </div>
+                        </div>
+                    </div>
+                    <input type="submit" value="Create Test" class='px-6 py-2 w-fit text-stone-100 bg-blue-800 rounded-lg'>
+                </div>
+            </form>
         </div>
     </div>
     <div id='questions' class="tab-content hidden">
