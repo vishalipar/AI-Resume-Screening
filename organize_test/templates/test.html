@@ -177,7 +177,61 @@
     </div>
     <div id='assign' class="tab-content hidden">
         <div class="card mt-6">
-            <p class='text-2xl text-stone-700 font-semibold'>Assign Test To Candidates</p>
+            <p class='flex items-center gap-3 text-2xl text-stone-700 font-semibold'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-pen-icon lucide-user-pen"><path d="M11.5 15H7a4 4 0 0 0-4 4v2"/><path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><circle cx="10" cy="7" r="4"/></svg>
+                Assign Test To Candidates
+            </p>
+            <div class="h-fit mt-9">
+                <div class="flex gap-4">
+                    <div class="flex flex-1 flex-col gap-2">
+                        <p class='text-stone-700'>Select Test</p>
+                        <select name="" id="" class='py-3 px-3 border border-stone-200 rounded-lg'>
+                            <option value="">Python Developer Assessment</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-1 flex-col gap-2">
+                        <p class='text-stone-700'>Test Deadline</p>
+                        <input type="datetime-local" name="datetime" class="px-4 py-2 border border-stone-200 rounded-lg">
+                    </div>
+                </div>
+                <div class="mt-9">
+                    <p class='text-stone-600 text-lg font-semibold'>Shortlisted Candidates</p>
+                    <div class="flex flex-col gap-4 mx-4 mt-3">
+                        <div class="flex items-center justify-between px-4 py-3 bg-blue-50 rounded-lg">
+                            <div class="">
+                                <p class='text-stone-700 font-semibold'>John Doe</p>
+                                <p class='text-stone-400 text-sm'>john09@example.com</p>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="candidate1" style="transform: scale(1.3);">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between px-4 py-3 bg-blue-50 rounded-lg">
+                            <div class="">
+                                <p class='text-stone-700 font-semibold'>Jane Smith</p>
+                                <p class='text-stone-400 text-sm'>jane4409@example.com</p>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="candidate1" style="transform: scale(1.3);">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between px-4 py-3 bg-blue-50 rounded-lg">
+                            <div class="">
+                                <p class='text-stone-700 font-semibold'>Mike Johnson</p>
+                                <p class='text-stone-400 text-sm'>mike@example.com</p>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="candidate1" style="transform: scale(1.3);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-6">
+                    <button type="button" class='px-5 py-2 text-stone-100 bg-blue-800 rounded-lg'>Assign Test & Send Email</button>
+                    <button type="button" class='px-5 py-2 text-stone-700 bg-stone-200 rounded-lg'>Select All</button>
+                </div>
+            </div>
+            
         </div>
     </div>
     <div id='results' class="tab-content hidden">
