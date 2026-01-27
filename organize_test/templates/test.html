@@ -112,9 +112,68 @@
             </p>
             <a href="{% url 'add_question' %}" class='text-stone-100 px-4 py-2 bg-blue-800 rounded-lg'>+ Add New Question</a>
         </div>
+        {% if not questions %}
+        <div class="flex flex-col gap-4 h-fit mt-9 mb-3">
+            <div class='flex justify-between py-4 px-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg'>
+                <div class="flex flex-col gap-2">
+                    <p class='text-stone-700 font-semibold'>1. What is the output of print(type([]))?
+                    </p>
+                    <div class="ml-5 text-stone-600">
+                        <p>A) &lt;class 'list'&gt; </p>
+                        <p>B) &lt;class 'dict'&gt; </p>
+                        <p>C) &lt;class 'tuple'&gt; </p>
+                        <p>D) &lt;class 'set'&gt;</p>
+                    </div>
+                    <div class="flex gap-3 text-sm">
+                        <span class='text-amber-800 bg-amber-50 py-1 px-3 rounded-lg'>Easy</span>
+                        <span class='text-stone-400 bg-stone-50 py-1 px-3 rounded-lg'>Marks:2</span>
+                    </div>
+                </div>
+                <div class="flex gap-3 h-fit">
+                    <button class='text-stone-600 py-1 px-4 bg-stone-200 rounded-lg'>Edit</button>
+                    <button class='text-stone-100 py-1 px-4 bg-red-500 rounded-lg'>Delete</button>
+                </div>
+            </div>
+            <div class='flex justify-between py-4 px-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg'>
+                <div class="flex flex-col gap-2">
+                    <p class='text-stone-700 font-semibold'>2. Write a function to reverse a string in Python
+                    </p>
+                    <div class="">
+                        <p class='text-stone-500'>Type: Coding Question</p>
+                    </div>
+                    <div class="flex gap-3 text-sm">
+                        <span class='text-amber-800 bg-amber-50 py-1 px-3 rounded-lg'>Medium</span>
+                        <span class='text-stone-400 bg-stone-50 py-1 px-3 rounded-lg'>Marks:10</span>
+                    </div>
+                </div>
+                <div class="flex gap-3 h-fit">
+                    <button class='text-stone-600 py-1 px-4 bg-stone-200 rounded-lg'>Edit</button>
+                    <button class='text-stone-100 py-1 px-4 bg-red-500 rounded-lg'>Delete</button>
+                </div>
+            </div>
+            <div class='flex justify-between py-4 px-6 bg-blue-50 border-l-4 border-blue-500 rounded-lg'>
+                <div class="flex flex-col gap-2">
+                    <p class='text-stone-700 font-semibold'>3. Explain the difference between == and === in JavaScript
+                    </p>
+                    <div class="">
+                        <p class='text-stone-500'>Type: Descriptive</p>
+                    </div>
+                    <div class="flex gap-3 text-sm">
+                        <span class='text-amber-800 bg-amber-50 py-1 px-3 rounded-lg'>Easy</span>
+                        <span class='text-stone-400 bg-stone-50 py-1 px-3 rounded-lg'>Marks:5</span>
+                    </div>
+                </div>
+                <div class="flex gap-3 h-fit">
+                    <button class='text-stone-600 py-1 px-4 bg-stone-200 rounded-lg'>Edit</button>
+                    <button class='text-stone-100 py-1 px-4 bg-red-500 rounded-lg'>Delete</button>
+                </div>
+            </div>
+        </div>
+        {% else %}
         <div class="flex justify-center items-center h-[30vh]">
             <p class='text-stone-400'>Question Bank is Empty.</p>
         </div>
+        {% endif %}
     </div>
     <div id='assign' class="tab-content hidden">
         <div class="card mt-6">
