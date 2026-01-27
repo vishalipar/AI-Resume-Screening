@@ -1,0 +1,142 @@
+{% extends "screening.html" %}
+
+{% block title %}Create New Question{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-lg">
+    <div class="flex flex-col gap-2 py-6 px-9 text-stone-100 bg-blue-800 rounded-t-xl">
+        <p class='text-3xl font-semibold '>Create New Question</p>
+        <p>Create question to your question bank</p>
+    </div>
+    <form method='post' action="">
+        {% csrf_token %}
+        <div class="flex flex-col gap-6 py-9 mx-9">
+            <div class="flex flex-col gap-2">
+                <p class='text-lg text-stone-700 font-semibold'>Question Type*</p>
+                <div class="flex justify-between gap-4">
+                    <button onclick='showSection("mcq")' type='button' class='question-type-button flex flex-1 items-center justify-center gap-2 px-9 py-4 text-blue-700 border-2 border-blue-700 bg-blue-50 rounded-lg'>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-notebook-pen-icon lucide-notebook-pen"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg>
+                        Multiple Choice (MCQ)
+                    </button>
+                    <button onclick='showSection("coding")' type='button' class='question-type-button flex flex-1 items-center justify-center gap-2 px-9 py-4 text-stone-700 border-2 border-stone-300 rounded-lg'>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-laptop-icon lucide-laptop"><path d="M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z"/><path d="M20.054 15.987H3.946"/></svg>
+                        Coding Question
+                    </button>
+                    <button onclick='showSection("descriptive")' type='button' class='question-type-button flex flex-1 items-center justify-center gap-2 px-9 py-4 text-stone-700 border-2 border-stone-300 rounded-lg'>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-line-icon lucide-pencil-line"><path d="M13 21h8"/><path d="m15 5 4 4"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>
+                        Descriptive
+                    </button>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2">
+                <p class='text-md text-stone-600'>Question Text*</p>
+                <textarea name="question" id="" cols="30" rows="4" placeholder='Enter your question here...' class='py-3 px-4 border border-stone-200 rounded-lg'></textarea>
+            </div>
+            <div class="flex gap-16">
+                <div class="flex flex-col gap-2">
+                    <p class='text-md text-stone-600'>Difficulty Level*</p>
+                    <div class="">
+                        <select name="" id="" class='w-64 px-4 py-3 border border-stone-300 rounded-lg'>
+                            <option value="">Select Level</option>
+                            <option value="">Easy</option>
+                            <option value="">Medium</option>
+                            <option value="">Hard</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <p class='text-md text-stone-600'>Marks*</p>
+                    <input type="number" name="marks" id="" placeholder='eg., 5' class='w-64 px-4 py-3 border border-stone-300 rounded-lg'>
+                </div>
+            </div>
+            <hr class='border-2'>
+            <div id='mcq' class="flex flex-col gap-4">
+                <p class='text-lg text-stone-700 font-semibold'>Answer Options</p>
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-2">
+                        <p class='font-medium text-stone-700'>Option A *</p>
+                        <div class="flex gap-3 items-center">
+                            <input type="radio" name="correct-answer" id="" class='w-5 h-5 text-purple-600'>
+                            <input type="text" class="flex-1 px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Enter option A">
+                            <span class="text-sm text-gray-500">Mark as correct</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class='font-medium text-stone-700'>Option B *</p>
+                        <div class="flex gap-3 items-center">
+                            <input type="radio" name="correct-answer" id="" class='w-5 h-5 text-purple-600'>
+                            <input type="text" class="flex-1 px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Enter option B">
+                            <span class="text-sm text-gray-500">Mark as correct</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class='font-medium text-stone-700'>Option C *</p>
+                        <div class="flex gap-3 items-center">
+                            <input type="radio" name="correct-answer" id="" class='w-5 h-5 text-purple-600'>
+                            <input type="text" class="flex-1 px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Enter option C">
+                            <span class="text-sm text-gray-500">Mark as correct</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <p class='font-medium text-stone-700'>Option D *</p>
+                        <div class="flex gap-3 items-center">
+                            <input type="radio" name="correct-answer" id="" class='w-5 h-5 text-purple-600'>
+                            <input type="text" class="flex-1 px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Enter option D">
+                            <span class="text-sm text-gray-500">Mark as correct</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="coding" class='hidden flex flex-col gap-4'>
+                <p class='text-lg text-stone-700 font-semibold'>Coding Details</p>
+                <div class="flex flex-col gap-2">
+                    <p class='text-stone-600'>Expected Solution (Optional)</p>
+                    <textarea name="" id="" cols="30" rows="6" placeholder='def reverse_string(s):
+        return s[::-1]' class='p-4 border border-stone-300 rounded-lg'></textarea>
+                </div>
+            </div>
+            <div id="descriptive" class='hidden'>
+                <p>Descriptive answer</p>
+            </div>
+            <hr class='border-2'>
+            <div class="flex justify-between mt-4">
+                <a href="{% url 'organize_test' %}" class='px-6 py-3 text-stone-600 font-semibold bg-stone-200 rounded-lg'>Cancel</a>
+                <div class="flex gap-3">
+                    <button type="button" class='px-6 py-3 text-blue-700 font-semibold border border-blue-700 rounded-lg'>Save & Add Another</button>
+                    <button type="submit" class='px-6 py-3 text-stone-100 font-semibold bg-blue-700 rounded-lg'>Save Question</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    function showSection(type) {
+        const buttons = document.querySelectorAll('.question-type-button');
+        buttons.forEach(btn => {
+            btn.classList.remove('border-blue-700', 'bg-blue-50', 'text-blue-700');
+            btn.classList.add('border-stone-300', 'text-stone-700');
+        });
+        
+        event.target.closest('button').classList.remove('border-stone-300', 'text-stone-700');
+        event.target.closest('button').classList.add('border-blue-700', 'bg-blue-50', 'text-blue-700');
+        
+        document.getElementById('mcq').classList.add('hidden');
+        document.getElementById('coding').classList.add('hidden');
+        document.getElementById('descriptive').classList.add('hidden');
+        
+        if (type === 'mcq') {
+            document.getElementById('mcq').classList.remove('hidden');
+        } else if (type === 'coding') {
+            document.getElementById('coding').classList.remove('hidden');
+        } else if (type === 'descriptive') {
+            document.getElementById('descriptive').classList.remove('hidden');
+        }
+    }
+</script>
+{% endblock %}

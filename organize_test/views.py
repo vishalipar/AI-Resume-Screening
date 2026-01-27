@@ -4,3 +4,6 @@ from django.shortcuts import render
 
 def organize_test(request):
     return render(request, 'test.html')
+    
+def add_question(request):
+    return render(request, 'add_question.html')
