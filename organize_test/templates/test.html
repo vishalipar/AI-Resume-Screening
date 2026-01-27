@@ -236,7 +236,156 @@
     </div>
     <div id='results' class="tab-content hidden">
         <div class="card mt-6">
-            <p class='text-2xl text-stone-700 font-semibold'>Test Results</p>
+            <p class='flex gap-3 items-center text-2xl text-stone-700 font-semibold'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-column-increasing-icon lucide-chart-column-increasing"><path d="M13 17V9"/><path d="M18 17V5"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M8 17v-3"/></svg>
+                Test Results
+            </p>
+            <div class="h-fit mt-4">
+                <table class='w-full border-separate border-spacing-y-6'>
+                    <thead class=''>
+                        <tr class='text-stone-500 text-sm'>
+                            <th class='font-semibold text-start'>Candidate Name</th>
+                            <th class='text-start'>Test Name</th>
+                            <th class='text-start'>Score</th>
+                            <th class='text-start'>Status</th>
+                            <th class='text-start'>Submitted On</th>
+                            <th class='text-start'>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class=''>
+                        <tr class='text-stone-700'>
+                            <td class=''>
+                                <span class=''>John Doe</span>
+                            </td>
+                            <td class=''>
+                                <span class=''>
+                                    Python Developer Assessment
+                                </span>
+                            </td>
+                            <td>
+                                <p class='text-stone-700 font-semibold'>
+                                    85%
+                                </p>
+                            </td>
+                            <td>
+                                <p class='text-sm w-fit px-2 py-1 bg-green-200 rounded-lg'>
+                                    Passed
+                                </p>
+                            </td>
+                            <td>
+                                <p>Jan 28, 2026</p>
+                            </td>
+                            <td>
+                                <button type="button" class='px-3 py-2 text-stone-600 bg-stone-200 rounded-lg'>View Details</button>
+                            </td>
+                        </tr>
+                        <tr class='text-stone-700'>
+                            <td class=''>
+                                <span class=''>Jane Smith</span>
+                            </td>
+                            <td class=''>
+                                <span class=''>
+                                    Python Developer Assessment
+                                </span>
+                            </td>
+                            <td>
+                                <p class='text-stone-700 font-semibold'>
+                                    92%
+                                </p>
+                            </td>
+                            <td>
+                                <p class='text-sm w-fit px-2 py-1 bg-green-200 rounded-lg'>
+                                    Passed
+                                </p>
+                            </td>
+                            <td>
+                                <p>Jan 28, 2026</p>
+                            </td>
+                            <td>
+                                <button type="button" class='px-3 py-2 text-stone-600 bg-stone-200 rounded-lg'>View Details</button>
+                            </td>
+                        </tr>
+                        <tr class='text-stone-700'>
+                            <td class=''>
+                                <span class=''>Mike Johnson</span>
+                            </td>
+                            <td class=''>
+                                <span class=''>
+                                    Frontend Developer Test
+                                </span>
+                            </td>
+                            <td>
+                                <p class='text-stone-700 font-semibold'>
+                                    65%
+                                </p>
+                            </td>
+                            <td>
+                                <p class='text-sm w-fit px-2 py-1 text-red-700 bg-red-200 rounded-lg'>
+                                    Failed
+                                </p>
+                            </td>
+                            <td>
+                                <p>Jan 28, 2026</p>
+                            </td>
+                            <td>
+                                <button type="button" class='px-3 py-2 text-stone-600 bg-stone-200 rounded-lg'>View Details</button>
+                            </td>
+                        </tr>
+                        <tr class='text-stone-700'>
+                            <td class=''>
+                                <span class=''>Sarah Williams</span>
+                            </td>
+                            <td class=''>
+                                <span class=''>
+                                    Data Analyst Screening
+                                </span>
+                            </td>
+                            <td>
+                                <p class='text-stone-700 font-semibold'>
+                                    --
+                                </p>
+                            </td>
+                            <td>
+                                <p class='text-sm w-fit px-2 py-1 text-amber-700 bg-amber-100 rounded-lg'>
+                                    In Progress
+                                </p>
+                            </td>
+                            <td>
+                                <p>--</p>
+                            </td>
+                            <td>
+                                <button type="button" class='px-3 py-2 text-stone-600 bg-stone-200 rounded-lg'>Pending</button>
+                            </td>
+                        </tr>
+                        <tr class='text-stone-700'>
+                            <td class=''>
+                                <span class=''>David Brown</span>
+                            </td>
+                            <td class=''>
+                                <span class=''>
+                                    Python Developer Assessment
+                                </span>
+                            </td>
+                            <td>
+                                <p class='text-stone-700 font-semibold'>
+                                    78%
+                                </p>
+                            </td>
+                            <td>
+                                <p class='text-sm w-fit px-2 py-1 text-blue-700 bg-blue-200 rounded-lg'>
+                                    Under Review
+                                </p>
+                            </td>
+                            <td>
+                                <p>Jan 28, 2026</p>
+                            </td>
+                            <td>
+                                <button type="button" class='px-3 py-2 text-stone-100 bg-blue-800 rounded-lg'>Review Now</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
