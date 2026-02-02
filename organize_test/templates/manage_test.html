@@ -1,0 +1,80 @@
+{% extends "screening.html" %}
+
+{% block title %}Manage Test{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-lg">
+    <div class="flex flex-col gap-2 p-6 bg-blue-800 rounded-b rounded-2xl">
+        <p class='text-white text-3xl font-semibold'>Add Question to Test</p>
+        <p class='text-stone-100'>Python Developer Assessment</p>
+    </div>
+    <div class="flex justify-between py-4 px-4">
+        <div class="flex flex-col justify-center gap-2">
+            <p class='text-lg text-stone-700 font-semibold'>Test Summary</p>
+            <div class='flex gap-4'>
+                <p>
+                    <span class='text-stone-500 font-semibold'>Duration: </span><span class='text-stone-500'>60 minutes</span>
+                </p>
+                <p>
+                    <span class='text-stone-500 font-semibold'>Difficulty: </span><span class='text-stone-500'>Medium</span>
+                </p>
+                <p>
+                    <span class='text-stone-500 font-semibold'>Position: </span><span class='text-stone-500'>Python Developer</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex flex-col justify-center gap-2">
+            <p class='flex flex-col items-end'>
+                <span class='text-4xl text-blue-800 font-semibold'>0</span>
+                <span class='text-stone-500'>Questions Selected</span>
+            </p>
+            <p class='text-stone-600 text-xl text-end font-semibold'>0 Marks</p>
+        </div>
+    </div>
+</div>
+<div class="bg-white p-6 mt-9 rounded-2xl shadow-lg">
+    <div class="flex justify-between items-center">
+        <p class='text-stone-700 text-lg font-semibold'>Available Questions (42)</p>
+        <p class='text-blue-800'>Select All</p>
+    </div>
+    <div class="flex flex-col gap-6 mt-4">
+        <div class="">
+            <div class="flex justify-between py-4 px-3 border border-stone-300 rounded-lg">
+                <div class="flex gap-4">
+                    <input type="checkbox" name="" id="" class='w-5 h-5'>
+                    <div class="flex flex-col gap-2">
+                        <p class='text-stone-700 font-semibold'>
+                            What is the output of print(type([]))?
+                        </p>
+                        <div class="ml-5 text-stone-600">
+                            <p>A) &lt;class 'list'&gt; </p>
+                            <p>B) &lt;class 'dict'&gt; </p>
+                            <p>C) &lt;class 'tuple'&gt; </p>
+                            <p>D) &lt;class 'set'&gt;</p>
+                        </div>
+                        <div class="flex gap-3 text-sm">
+                            <span class='text-green-800 bg-green-100 py-1 px-3 rounded-lg'>Easy</span>
+                            <span class='text-purple-800 bg-purple-100 py-1 px-3 rounded-lg'>MCQ</span>
+                        </div>
+                    </div>
+                </div>
+                <p class='text-blue-800'>2 marks</p>
+            </div>
+        </div>
+        <div class="flex justify-between">
+            <a href="{% url 'organize_test' %}" class='flex items-center gap-2 w-fit px-5 py-3 text-stone-700 bg-stone-200 rounded-lg'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-left-icon lucide-move-left"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
+                Back to Test Details
+            </a>
+            <div class="flex gap-3">
+                <button type="button" class='px-6 py-3 text-blue-700 font-semibold border border-blue-700 rounded-lg'>Save as Draft</button>
+                <a href='{% url "add_question" %}' type="submit" class='flex items-center gap-2 px-6 py-3 text-stone-100 font-semibold bg-blue-700 rounded-lg'>
+                    Add Question to Test
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-right-icon lucide-move-right"><path d="M18 8L22 12L18 16"/><path d="M2 12H22"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
