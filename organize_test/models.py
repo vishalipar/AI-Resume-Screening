@@ -25,3 +25,41 @@ class newTest(models.Model):
     
     def __str__(self):
         return self.title
+        
+class Question(models.Model):
+    QUESTION_TYPE_CHOICES = [
+        ('mcq', 'Multiple Choice'),
+        ('coding', 'Coding'),
+        ('descriptive', 'Descriptive'),
+    ]
+    
+    DIFFICULTY_CHOICES =[
+        ('easy', 'Easy'),
+        ('medium', 'Medium'),
+        ('hard', 'Hard'),
+    ]
+    
+    question_text = models.TextField(help_text = 'Enter the question text')
+    question_type = models.CharField(max_length=20, choices=QUESTION_TYPE_CHOICES)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES)
+    marks = models.IntegerField()
+    # for coding questions
+    expected_solution = models.TextField(blank=True, null=True, help_text='Sample solution for coding question')
+    
+    # For descriptive questions
+    sample_answer = models.TextField(blank=True, null=True, help_text='Key points to be covered in answer')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f'{self.question_type.upper()} - {self.question_text[:50]}'
+        
+# For MCQ type questions
+class QuestionOption(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
+    option_text = models.CharField(max_length=400)
+    is_correct = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f'{self.option_text} ({'Correct' if self.is_correct else 'Wrong'})'
+        
