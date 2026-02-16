@@ -40,8 +40,120 @@
         </div>
     </header>
     
-    <div class="max-w-[70vw] mx-auto mt-14 mb-[50px]">
-        {% block content %}{% endblock %}
+    <div class="flex gap-3">
+        <!-- Toggle Button -->
+        <button id="sidebarToggle" class="fixed top-20 left-4 z-40 bg-white p-2 rounded-lg shadow-lg border border-stone-200 hover:bg-stone-50">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3662c9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-icon lucide-bot"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+        </button>
+    
+        <!-- Sticky Sidebar - NO transition classes -->
+        <div id="sidebar" class="w-[25vw] h-screen bg-white border-r-2 border-stone-200 fixed top-[72px] left-0 -translate-x-full z-30">
+            <div class="py-3 pl-16 border-b border-stone-300">
+                <div class="">
+                    <p class="text-lg text-stone-700 font-semibold">ResumeAI Assistant</p>
+                    <div class='flex items-center gap-3 text-[13px] text-stone-500'>
+                        <div class="flex items-center gap-1">
+                            <div class="h-3 w-3 rounded-full bg-green-400"></div>
+                            <p>Online</p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="h-2 w-2 rounded-full bg-stone-400"></div>
+                            <p>Ready to screen</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Your sidebar content here -->
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <!-- Welcome message -->
+                <div class="chat-message flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex-shrink-0"></div>
+                    <div class="flex-1">
+                        <div class="bg-cyan-500/10 border border-cyan-500/20 rounded-lg rounded-tl-none p-3">
+                            <p class="text-sm text-stone-700">Hello! I'm your AI recruitment assistant. I can help you find candidates, analyze resumes, and manage your hiring process. Try asking me to find candidates for a specific role!</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Just now</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Typing Indicator (Hidden by default) -->
+            <div id="typing-indicator" class="hidden px-4 pb-2">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex-shrink-0"></div>
+                    <div class="bg-cyan-500/10 border border-cyan-500/20 rounded-lg rounded-tl-none p-3">
+                        <div class="typing-indicator flex space-x-1">
+                            <span class="w-2 h-2 bg-cyan-400 rounded-full"></span>
+                            <span class="w-2 h-2 bg-cyan-400 rounded-full"></span>
+                            <span class="w-2 h-2 bg-cyan-400 rounded-full"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Input Area -->
+            <div class="p-4 w-[25vw] border-t border-cyan-500/20 bg-stone-200 fixed bottom-0">
+                <div class="flex space-x-2">
+                    <button id="voice-btn" class="w-10 h-10 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center hover:bg-purple-500/30 transition-all">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                        </svg>
+                    </button>
+                    <input 
+                        type="text" 
+                        id="chat-input" 
+                        placeholder="Ask me anything..." 
+                        class="flex-1 px-4 py-2 bg-stone-100 border border-cyan-500/20 rounded-lg focus:outline-none focus:border-cyan-500/50 transition-all text-sm"
+                    />
+                    <button id="send-btn" class="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 transition-all font-medium">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content - NO transition -->
+        <div id="mainContent" class="flex-1">
+            <div class="max-w-[70vw] mx-auto mt-14 mb-[50px]">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
     </div>
+    
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        
+        let isOpen = localStorage.getItem('sidebarOpen') === 'true';
+    
+        // Apply saved state WITHOUT transition on load
+        if (isOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            mainContent.classList.add('ml-[25vw]');
+        }
+    
+        sidebarToggle.addEventListener('click', () => {
+            // Add transitions temporarily
+            sidebar.classList.add('transition-transform', 'duration-300');
+            mainContent.classList.add('transition-all', 'duration-300');
+            
+            isOpen = !isOpen;
+            localStorage.setItem('sidebarOpen', isOpen);
+            
+            if (isOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                mainContent.classList.add('ml-[25vw]');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                mainContent.classList.remove('ml-[25vw]');
+            }
+    
+            // Remove transitions after animation completes (300ms)
+            setTimeout(() => {
+                sidebar.classList.remove('transition-transform', 'duration-300');
+                mainContent.classList.remove('transition-all', 'duration-300');
+            }, 300);
+        });
+    </script>
+    
 </body>
 </html>
