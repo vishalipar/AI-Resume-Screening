@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'resume_screening',
     'organize_test',
     
+    'rest_framework',
+    'chat_bot',
     'django_cleanup.apps.CleanupConfig',
 ]
 
@@ -148,3 +150,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+GROQ_API_KEY = config('GROQ_API_KEY')
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+}
