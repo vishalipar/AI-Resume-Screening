@@ -75,6 +75,18 @@
                         <p class="text-xs text-gray-500 mt-1">Just now</p>
                     </div>
                 </div>
+                <!-- upload resume-->
+                <div class="p-4 border-t border-stone-200">
+                    <label for="resume-upload" class="block w-full cursor-pointer">
+                        <div class="px-4 py-3 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 rounded-lg hover:border-cyan-500/50 transition-all text-center">
+                            <svg class="w-5 h-5 mx-auto mb-1 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <span class="text-sm font-medium text-stone-700">Upload Resume</span>
+                        </div>
+                    </label>
+                    <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" class="hidden" />
+                </div>
             </div>
             <!-- Typing Indicator (Hidden by default) -->
             <div id="typing-indicator" class="hidden px-4 pb-2">
@@ -307,6 +319,53 @@
                     }
                 }
             });
+        });
+        
+        // Resume upload handler
+        const resumeUpload = document.getElementById('resume-upload');
+
+        resumeUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Show upload message
+            addMessage('user', `Uploading ${file.name}...`);
+            typingIndicator.classList.remove('hidden');
+            
+            const formData = new FormData();
+            formData.append('resume', file);
+            
+            try {
+                const response = await fetch('/api/resume/upload/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                typingIndicator.classList.add('hidden');
+                
+                if (data.data) {
+                    const info = data.data;
+                    const message = `
+                        <strong>Resume Parsed!</strong><br>
+                        👤 Name: ${info.name}<br>
+                        📧 Email: ${info.email}<br>
+                        📞 Phone: ${info.phone}<br>
+                        🔧 Skills: ${info.skills.join(', ')}
+                    `;
+                    addMessage('bot', message);
+                } else {
+                    addMessage('bot', data.error || 'Failed to parse resume');
+                }
+                
+            } catch (error) {
+                typingIndicator.classList.add('hidden');
+                addMessage('bot', 'Error uploading resume');
+                console.error(error);
+            }
+            
+            // Reset input
+            e.target.value = '';
         });
     
         observer.observe(sidebar, { attributes: true });

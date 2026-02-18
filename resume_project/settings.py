@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     
     'rest_framework',
     'chat_bot',
+    'resume_parser',
     'django_cleanup.apps.CleanupConfig',
 ]
 
