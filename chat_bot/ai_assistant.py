@@ -1,10 +1,22 @@
 from groq import Groq
 from django.conf import settings
+from resume_parser.models import JobRole, Resume
 
 client = Groq(api_key=settings.GROQ_API_KEY)
 
 class AIAssistant:
     def chat(self, user_message):
+         # Get context from database
+        recent_resume = Resume.objects.last()
+        active_jobs = JobRole.objects.filter(status='active')
+        
+        context = ""
+        if recent_resume:
+            context += f"\nLast uploaded resume: {recent_resume.name}, Skills: {', '.join(recent_resume.skills)}, Experience: {recent_resume.experience_years} years"
+        
+        if active_jobs.exists():
+            context += f"\nActive jobs: {', '.join([j.title for j in active_jobs])}"
+        
         try:
             response = client.chat.completions.create(
                 model="llama-3.1-8b-instant",  # Free model
