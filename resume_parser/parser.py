@@ -49,6 +49,23 @@ class ResumeParser:
             if skill.lower() in text_lower:
                 found_skills.append(skill)
         return found_skills
+        
+    def extract_experience_years(self, text):
+        """Extract years of experience"""
+        patterns = [
+            r'(\d+)\+?\s*(?:years?|yrs?)(?:\s+of)?\s+(?:experience|exp)',
+            r'(?:experience|exp)(?:\s+of)?\s+(\d+)\+?\s*(?:years?|yrs?)',
+        ]
+        
+        for pattern in patterns:
+            matches = re.findall(pattern, text.lower())
+            if matches:
+                try:
+                    return int(matches[0])
+                except:
+                    continue
+        
+        return 0
     
     def parse_resume(self, file_obj, filename):
         """Main parsing function"""
@@ -67,6 +84,8 @@ class ResumeParser:
             'email': self.extract_email(text),
             'phone': self.extract_phone(text),
             'skills': self.extract_skills(text),
+            'experience_years': self.extract_experience_years(text),
             'resume_text': text,
             'success': True
         }
+        

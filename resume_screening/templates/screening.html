@@ -188,11 +188,8 @@
             const message = chatInput.value.trim();
             if (!message) return;
             
-            // Add user message to chat
             addMessage('user', message);
             chatInput.value = '';
-            
-            // Show typing indicator
             typingIndicator.classList.remove('hidden');
             
             try {
@@ -208,8 +205,6 @@
                 });
                 
                 const data = await response.json();
-                
-                // Hide typing indicator
                 typingIndicator.classList.add('hidden');
                 
                 // Update session ID
@@ -220,9 +215,11 @@
                 // Add bot response
                 addMessage('bot', data.message);
                 
-                // Handle candidates if returned
-                if (data.candidates && data.candidates.length > 0) {
-                    displayCandidates(data.candidates);
+                // Show match score if available
+                if (data.match_score !== undefined) {
+                    const scoreColor = data.match_score >= 70 ? 'green' : 
+                                      data.match_score >= 50 ? 'orange' : 'red';
+                    addMessage('bot', `<div class="text-${scoreColor}-600 font-bold text-2xl">${data.match_score}% Match</div>`);
                 }
                 
             } catch (error) {

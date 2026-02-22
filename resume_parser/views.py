@@ -18,6 +18,14 @@ class ResumeUploadView(APIView):
         
         if 'error' in result:
             return Response({'error': result['error']}, status=400)
+            
+        # CHECK FOR DUPLICATE EMAIL
+        email = result.get('email', '')
+        if email and Resume.objects.filter(email=email).exists():
+            return Response({
+                'error': 'Duplicate resume! A resume with this email already exists.',
+                'duplicate': True
+            }, status=400)
         
         # Save to database
         resume = Resume.objects.create(
