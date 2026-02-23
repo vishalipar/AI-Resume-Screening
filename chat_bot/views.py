@@ -20,15 +20,277 @@ class ChatView(APIView):
         state = get_or_create_state(session_id)
         assistant = AIAssistant()
         
+        # Check for "show all" or "rank all" request
+        if state.stage == 'idle' and any(keyword in user_message.lower() for keyword in ['show all', 'all candidates', 'rank all', 'list all']):
+    
+            # Find the job mentioned
+            jobs = JobRole.objects.filter(status='active')
+            target_job = None
+            
+            for job in jobs:
+                if job.title.lower() in user_message.lower():
+                    target_job = job
+                    break
+            
+            # If no job mentioned but only one exists, use it
+            if not target_job and jobs.count() == 1:
+                target_job = jobs.first()
+            
+            # If multiple jobs and none mentioned, CHANGE STATE to 'selecting_job'
+            if not target_job and jobs.count() > 1:
+                state.stage = 'selecting_job_for_ranking'  # NEW STATE
+                job_list = '\n'.join([f"- {job.title}" for job in jobs])
+                return Response({
+                    'session_id': session_id,
+                    'message': f"Which job role?\n\n{job_list}\n\nPlease specify the job title.",
+                    'success': True
+                })
+            
+            # If no jobs exist
+            if not target_job:
+                return Response({
+                    'session_id': session_id,
+                    'message': "No job roles found. Please create a job role first.",
+                    'success': True
+                })
+            
+            # Get all resumes
+            all_resumes = Resume.objects.all()
+            
+            if not all_resumes.exists():
+                return Response({
+                    'session_id': session_id,
+                    'message': "No resumes in database. Please upload resumes first.",
+                    'success': True
+                })
+            
+            # Calculate scores for all resumes
+            candidates_with_scores = []
+            
+            for resume in all_resumes:
+                match_score = assistant.calculate_match_score(resume, target_job)
+                candidates_with_scores.append({
+                    'id': resume.id,
+                    'name': resume.name,
+                    'email': resume.email,
+                    'skills': resume.skills,
+                    'experience_years': resume.experience_years,
+                    'match_score': match_score
+                })
+            
+            # Sort by match score (highest first)
+            candidates_with_scores.sort(key=lambda x: x['match_score'], reverse=True)
+            
+            # Build response message
+            message = f"**All Candidates for {target_job.title}** (Total: {len(candidates_with_scores)})\n\n"
+            
+            for i, candidate in enumerate(candidates_with_scores[:10], 1):  # Top 10
+                emoji = '🥇' if i == 1 else '🥈' if i == 2 else '🥉' if i == 3 else '📄'
+                message += f"{emoji} **{i}. {candidate['name']}** - {candidate['match_score']}%\n"
+                message += f"   Skills: {', '.join(candidate['skills'][:3])}...\n\n"
+            
+            if len(candidates_with_scores) > 10:
+                message += f"... and {len(candidates_with_scores) - 10} more candidates"
+            
+            return Response({
+                'session_id': session_id,
+                'message': message,
+                'candidates': candidates_with_scores,  # Send full data for frontend
+                'job_title': target_job.title,
+                'show_on_screen': True,  # Signal to show on main screen
+                'success': True
+            })
+        
+        # Check for matching request - IMPROVED
+        elif state.stage == 'idle' and any(keyword in user_message.lower() for keyword in ['match', 'score', 'calculate']):
+            
+            # Find the job mentioned in message
+            jobs = JobRole.objects.filter(status='active')
+            target_job = None
+            
+            # Try to find job by title in message
+            for job in jobs:
+                if job.title.lower() in user_message.lower():
+                    target_job = job
+                    break
+            
+            # If no job mentioned but only one exists, use it
+            if not target_job and jobs.count() == 1:
+                target_job = jobs.first()
+            
+            # If multiple jobs and none mentioned, list them
+            if not target_job and jobs.count() > 1:
+                state.stage = 'selecting_job_for_matching'
+                job_list = '\n'.join([f"- {job.title}" for job in jobs])
+                return Response({
+                    'session_id': session_id,
+                    'message': f"Which job role do you want to match against?\n\n{job_list}\n\nPlease specify the job title.",
+                    'success': True
+                })
+            
+            # If no jobs exist
+            if not target_job:
+                return Response({
+                    'session_id': session_id,
+                    'message': "No job roles found in database. Please create a job role first.",
+                    'success': True
+                })
+            
+            # Check if resume exists
+            if not Resume.objects.exists():
+                return Response({
+                    'session_id': session_id,
+                    'message': "No resumes uploaded yet. Please upload a resume first.",
+                    'success': True
+                })
+            
+            recent_resume = Resume.objects.last()
+            
+            # Calculate match
+            match_score = assistant.calculate_match_score(recent_resume, target_job)
+            
+            message = f"""
+        **Match Analysis for {recent_resume.name}:**
+
+        **Job Role:** {target_job.title}
+        **Match Score:** {match_score}%
+
+        **Candidate Skills:** {', '.join(recent_resume.skills) if recent_resume.skills else 'None found'}
+        **Required Skills:** {', '.join(target_job.required_skills)}
+
+        **Candidate Experience:** {recent_resume.experience_years} years
+        **Required Experience:** {target_job.experience_required} years
+
+        {'✅ **Strong Match!**' if match_score >= 70 else '⚠️ **Partial Match**' if match_score >= 50 else '❌ **Weak Match**'}
+            """
+            
+            return Response({
+                'session_id': session_id,
+                'message': message,
+                'match_score': match_score,
+                'success': True
+            })
+            
+        # Handle job selection for matching (NEW)
+        elif state.stage == 'selecting_job_for_matching':
+            jobs = JobRole.objects.filter(status='active')
+            target_job = None
+            
+            for job in jobs:
+                if job.title.lower() in user_message.lower():
+                    target_job = job
+                    break
+            
+            if not target_job:
+                return Response({
+                    'session_id': session_id,
+                    'message': "Job not found. Please enter a valid job title.",
+                    'success': True
+                })
+            
+            state.stage = 'idle'  # Reset state
+    
+            if not Resume.objects.exists():
+                return Response({
+                    'session_id': session_id,
+                    'message': "No resumes uploaded yet.",
+                    'success': True
+                })
+            
+            recent_resume = Resume.objects.last()
+            match_score = assistant.calculate_match_score(recent_resume, target_job)
+            
+            message = f"""
+        **Match Analysis for {recent_resume.name}:**
+
+        **Job Role:** {target_job.title}
+        **Match Score:** {match_score}%
+
+        **Candidate Skills:** {', '.join(recent_resume.skills) if recent_resume.skills else 'None found'}
+        **Required Skills:** {', '.join(target_job.required_skills)}
+
+        **Candidate Experience:** {recent_resume.experience_years} years
+        **Required Experience:** {target_job.experience_required} years
+
+        {'✅ **Strong Match!**' if match_score >= 70 else '⚠️ **Partial Match**' if match_score >= 50 else '❌ **Weak Match**'}
+        """
+    
+            return Response({
+                'session_id': session_id,
+                'message': message,
+                'match_score': match_score,
+                'success': True
+            })
+            
+        # Handle job selection for ranking (NEW)
+        elif state.stage == 'selecting_job_for_ranking':
+            jobs = JobRole.objects.filter(status='active')
+            target_job = None
+            
+            # Find the job by title
+            for job in jobs:
+                if job.title.lower() in user_message.lower():
+                    target_job = job
+                    break
+            
+            if not target_job:
+                return Response({
+                    'session_id': session_id,
+                    'message': "Job not found. Please enter a valid job title from the list above.",
+                    'success': True
+                })
+    
+            # Reset state
+            state.stage = 'idle'
+            
+            # Get all resumes and calculate scores
+            all_resumes = Resume.objects.all()
+            
+            if not all_resumes.exists():
+                return Response({
+                    'session_id': session_id,
+                    'message': "No resumes in database.",
+                    'success': True
+                })
+            
+            candidates_with_scores = []
+            for resume in all_resumes:
+                match_score = assistant.calculate_match_score(resume, target_job)
+                candidates_with_scores.append({
+                    'id': resume.id,
+                    'name': resume.name,
+                    'email': resume.email,
+                    'skills': resume.skills,
+                    'experience_years': resume.experience_years,
+                    'match_score': match_score
+                })
+            
+            candidates_with_scores.sort(key=lambda x: x['match_score'], reverse=True)
+            
+            message = f"**All Candidates for {target_job.title}** (Total: {len(candidates_with_scores)})\n\n"
+            for i, candidate in enumerate(candidates_with_scores[:10], 1):
+                emoji = '🥇' if i == 1 else '🥈' if i == 2 else '🥉' if i == 3 else '📄'
+                message += f"{emoji} **{i}. {candidate['name']}** - {candidate['match_score']}%\n"
+                message += f"   Skills: {', '.join(candidate['skills'][:3])}...\n\n"
+            
+            return Response({
+                'session_id': session_id,
+                'message': message,
+                'candidates': candidates_with_scores,
+                'job_title': target_job.title,
+                'show_on_screen': True,
+                'success': True
+            })
+            
         # Check for job creation intent
-        if state.stage == 'idle' and any(keyword in user_message.lower() for keyword in ['create job', 'new job', 'add job']):
+        elif state.stage == 'idle' and any(keyword in user_message.lower() for keyword in ['create job', 'new job', 'add job']):
             state.stage = 'collecting_jd'
             return Response({
                 'session_id': session_id,
                 'message': "Great! Let's create a new job role. What is the job title?",
                 'success': True
             })
-        
+            
         # Collecting JD information
         elif state.stage == 'collecting_jd':
             
@@ -179,76 +441,7 @@ Reply 'yes' to confirm, 'no' to cancel, or 'edit [field]' to make changes.
                     'message': "Please reply 'yes' to save or 'no' to cancel.",
                     'success': True
                 })
-        
-        # Check for matching request - IMPROVED
-        elif any(keyword in user_message.lower() for keyword in ['match', 'score', 'calculate']):
-            
-            # Find the job mentioned in message
-            jobs = JobRole.objects.filter(status='active')
-            target_job = None
-            
-            # Try to find job by title in message
-            for job in jobs:
-                if job.title.lower() in user_message.lower():
-                    target_job = job
-                    break
-            
-            # If no job mentioned but only one exists, use it
-            if not target_job and jobs.count() == 1:
-                target_job = jobs.first()
-            
-            # If multiple jobs and none mentioned, list them
-            if not target_job and jobs.count() > 1:
-                job_list = '\n'.join([f"- {job.title}" for job in jobs])
-                return Response({
-                    'session_id': session_id,
-                    'message': f"Which job role do you want to match against?\n\n{job_list}\n\nPlease specify the job title.",
-                    'success': True
-                })
-            
-            # If no jobs exist
-            if not target_job:
-                return Response({
-                    'session_id': session_id,
-                    'message': "No job roles found in database. Please create a job role first.",
-                    'success': True
-                })
-            
-            # Check if resume exists
-            if not Resume.objects.exists():
-                return Response({
-                    'session_id': session_id,
-                    'message': "No resumes uploaded yet. Please upload a resume first.",
-                    'success': True
-                })
-            
-            recent_resume = Resume.objects.last()
-            
-            # Calculate match
-            match_score = assistant.calculate_match_score(recent_resume, target_job)
-            
-            message = f"""
-        **Match Analysis for {recent_resume.name}:**
-
-        **Job Role:** {target_job.title}
-        **Match Score:** {match_score}%
-
-        **Candidate Skills:** {', '.join(recent_resume.skills) if recent_resume.skills else 'None found'}
-        **Required Skills:** {', '.join(target_job.required_skills)}
-
-        **Candidate Experience:** {recent_resume.experience_years} years
-        **Required Experience:** {target_job.experience_required} years
-
-        {'✅ **Strong Match!**' if match_score >= 70 else '⚠️ **Partial Match**' if match_score >= 50 else '❌ **Weak Match**'}
-            """
-            
-            return Response({
-                'session_id': session_id,
-                'message': message,
-                'match_score': match_score,
-                'success': True
-            })
-        
+          
         # Normal chat
         else:
             result = assistant.chat(user_message)
