@@ -428,20 +428,173 @@ Reply 'yes' to confirm, 'no' to cancel, or 'edit [field]' to make changes.
                     'success': True
                 })
             
+            # Handle ADD operations
+            elif 'add' in user_message.lower() and 'skill' in user_message.lower():
+                # Extract skill to add
+                import re
+                # Pattern: "add [skill] to skills"
+                match = re.search(r'add\s+(.+?)\s+to\s+skill', user_message.lower())
+                if match:
+                    new_skill = match.group(1).strip()
+                    state.jd_data['required_skills'].append(new_skill)
+                    
+                    summary = f"""
+        Updated! Here's the new summary:
+
+        📋 **Title:** {state.jd_data.get('title')}
+
+        📝 **Description:** 
+        {state.jd_data.get('description')}
+
+        🔧 **Required Skills:** {', '.join(state.jd_data.get('required_skills', []))}
+
+        ⏱️ **Experience:** {state.jd_data.get('experience_required')} years
+
+        📍 **Location:** {state.jd_data.get('location') or 'Not specified'}
+
+        ---
+        Reply 'yes' to save, 'no' to cancel, or make more edits.
+                    """
+                    
+                    return Response({
+                        'session_id': session_id,
+                        'message': summary,
+                        'success': True
+                    })
+                else:
+                    return Response({
+                        'session_id': session_id,
+                        'message': "Please specify like: 'add Machine Learning to skills'",
+                        'success': True
+                    })
+            
+            # Handle REMOVE operations
+            elif 'remove' in user_message.lower() and 'skill' in user_message.lower():
+                import re
+                match = re.search(r'remove\s+(.+?)\s+from\s+skill', user_message.lower())
+                if match:
+                    skill_to_remove = match.group(1).strip()
+                    current_skills = state.jd_data.get('required_skills', [])
+                    # Case-insensitive removal
+                    updated_skills = [s for s in current_skills if s.lower() != skill_to_remove.lower()]
+                    
+                    if len(updated_skills) == len(current_skills):
+                        return Response({
+                            'session_id': session_id,
+                            'message': f"Skill '{skill_to_remove}' not found. Current skills: {', '.join(current_skills)}",
+                            'success': True
+                        })
+                    
+                    state.jd_data['required_skills'] = updated_skills
+                    
+                    summary = f"""
+        Updated! Here's the new summary:
+
+        📋 **Title:** {state.jd_data.get('title')}
+
+        📝 **Description:** 
+        {state.jd_data.get('description')}
+
+        🔧 **Required Skills:** {', '.join(state.jd_data.get('required_skills', []))}
+
+        ⏱️ **Experience:** {state.jd_data.get('experience_required')} years
+
+        📍 **Location:** {state.jd_data.get('location') or 'Not specified'}
+
+        ---
+        Reply 'yes' to save, 'no' to cancel, or make more edits.
+                    """
+                    
+                    return Response({
+                        'session_id': session_id,
+                        'message': summary,
+                        'success': True
+                    })
+    
+            # Handle EDIT operations (replace entire field)
             elif user_message.lower().startswith('edit'):
-                return Response({
-                    'session_id': session_id,
-                    'message': "Which field would you like to edit? (title, description, skills, experience, location)",
-                    'success': True
-                })
+                # Detect which field
+                field_name = None
+                if 'title' in user_message.lower():
+                    field_name = 'title'
+                elif 'description' in user_message.lower():
+                    field_name = 'description'
+                elif 'skill' in user_message.lower():
+                    field_name = 'skills'
+                elif 'experience' in user_message.lower():
+                    field_name = 'experience'
+                elif 'location' in user_message.lower():
+                    field_name = 'location'
+                
+                if field_name:
+                    state.stage = f'editing_{field_name}'
+                    state.jd_data['editing_field'] = field_name
+                    
+                    return Response({
+                        'session_id': session_id,
+                        'message': f"What's the new value for **{field_name}**?",
+                        'success': True
+                    })
+                else:
+                    return Response({
+                        'session_id': session_id,
+                        'message': "Which field? (title, description, skills, experience, location)",
+                        'success': True
+                    })
             
             else:
                 return Response({
                     'session_id': session_id,
-                    'message': "Please reply 'yes' to save or 'no' to cancel.",
+                    'message': "Please reply:\n- 'yes' to save\n- 'no' to cancel\n- 'edit [field]' to change a field\n- 'add [skill] to skills' to add a skill\n- 'remove [skill] from skills' to remove a skill",
                     'success': True
                 })
-          
+
+        # Handle editing process (NEW SECTION - Add before "Check for job creation intent")
+        elif state.stage.startswith('editing_'):
+            field_name = state.jd_data.get('editing_field')
+            
+            if field_name == 'title':
+                state.jd_data['title'] = user_message
+            elif field_name == 'description':
+                state.jd_data['description'] = user_message
+            elif field_name == 'skills':
+                state.jd_data['required_skills'] = [s.strip() for s in user_message.split(',')]
+            elif field_name == 'experience':
+                try:
+                    exp = int(''.join(filter(str.isdigit, user_message)))
+                    state.jd_data['experience_required'] = exp
+                except:
+                    state.jd_data['experience_required'] = 0
+            elif field_name == 'location':
+                state.jd_data['location'] = user_message
+            
+            # Go back to confirmation
+            state.stage = 'confirming_jd'
+            
+            summary = f"""
+        Updated! Here's the new summary:
+
+        📋 **Title:** {state.jd_data.get('title')}
+
+        📝 **Description:** 
+        {state.jd_data.get('description')}
+
+        🔧 **Required Skills:** {', '.join(state.jd_data.get('required_skills', []))}
+
+        ⏱️ **Experience:** {state.jd_data.get('experience_required')} years
+
+        📍 **Location:** {state.jd_data.get('location') or 'Not specified'}
+
+        ---
+        Reply 'yes' to save, 'no' to cancel, or make more edits.
+            """
+            
+            return Response({
+                'session_id': session_id,
+                'message': summary,
+                'success': True
+            })
+    
         # Normal chat
         else:
             result = assistant.chat(user_message)
