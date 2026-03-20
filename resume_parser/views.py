@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from .parser import ResumeParser
 from .models import JobRole, Resume
+from django.shortcuts import render
 
 class ResumeUploadView(APIView):
     parser_classes = (MultiPartParser,)
@@ -80,3 +81,38 @@ class JobRoleView(APIView):
             'id': job.id,
             'title': job.title
         })
+        
+def job_roles_view(request):
+    return render(request, 'job_roles.html')
+    
+class JobRolesAPIView(APIView):
+    """API to get all job roles"""
+    
+    def get(self, request):
+        jobs = JobRole.objects.all().order_by('-created_at')
+        
+        data = []
+        for job in jobs:
+            data.append({
+                'id': job.id,
+                'title': job.title,
+                'description': job.description,
+                'required_skills': job.required_skills,
+                'experience_required': job.experience_required,
+                'location': job.location,
+                'salary_range': job.salary_range,
+                'status': job.status,
+                'created_at': job.created_at.strftime('%B %d, %Y')
+            })
+        
+        return Response({'jobs': data})
+    
+    def delete(self, request, job_id):
+        """Delete a job role"""
+        try:
+            job = JobRole.objects.get(id=job_id)
+            job.delete()
+            return Response({'message': 'Job deleted successfully'})
+        except JobRole.DoesNotExist:
+            return Response({'error': 'Job not found'}, status=404)
+            
