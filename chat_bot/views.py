@@ -20,8 +20,116 @@ class ChatView(APIView):
         state = get_or_create_state(session_id)
         assistant = AIAssistant()
         
+        
+        # Check for "list jobs" or "all jobs" request
+        if state.stage == 'idle' and any(keyword in user_message.lower() for keyword in ['list jobs', 'all jobs', 'show jobs', 'available jobs']):
+            
+            jobs = JobRole.objects.filter(status='active')
+            
+            if not jobs.exists():
+                return Response({
+                    'session_id': session_id,
+                    'message': "No job roles found. Create one to get started!",
+                    'success': True
+                })
+            
+            message = f"**Available Job Roles** (Total: {jobs.count()})\n\n"
+            
+            for i, job in enumerate(jobs, 1):
+                message += f"**{i}. {job.title}**\n"
+                message += f"   📍 {job.location or 'Not specified'} | "
+                message += f"⏱️ {job.experience_required} years | "
+                message += f"🔧 {len(job.required_skills)} skills required\n\n"
+            
+            message += "Type 'show job description for [job title]' to view full details."
+            
+            return Response({
+                'session_id': session_id,
+                'message': message,
+                'jobs': [{
+                    'id': job.id,
+                    'title': job.title,
+                    'location': job.location,
+                    'experience_required': job.experience_required,
+                    'skills_count': len(job.required_skills)
+                } for job in jobs],
+                'success': True
+            })
+            
+        # Check for "show job" or "job description" request
+        elif state.stage == 'idle' and any(keyword in user_message.lower() for keyword in ['show job', 'job description', 'job details', 'view job']):
+            
+            # Find the job mentioned
+            jobs = JobRole.objects.filter(status='active')
+            target_job = None
+            
+            for job in jobs:
+                if job.title.lower() in user_message.lower():
+                    target_job = job
+                    break
+            
+            # If no job mentioned but only one exists, use it
+            if not target_job and jobs.count() == 1:
+                target_job = jobs.first()
+            
+            # If multiple jobs and none mentioned, ask
+            if not target_job and jobs.count() > 1:
+                state.stage = 'selecting_job_for_details'
+                job_list = '\n'.join([f"- {job.title}" for job in jobs])
+                return Response({
+                    'session_id': session_id,
+                    'message': f"Which job role?\n\n{job_list}\n\nPlease specify the job title.",
+                    'success': True
+                })
+            
+            # If no jobs exist
+            if not target_job:
+                return Response({
+                    'session_id': session_id,
+                    'message': "No job roles found. Please create a job role first.",
+                    'success': True
+                })
+            
+            # Build detailed JD display
+            message = f"""
+        📋 **Job Role: {target_job.title}**
+
+        📝 **Description:**
+        {target_job.description}
+
+        🔧 **Required Skills:**
+        {', '.join(target_job.required_skills)}
+
+        ⏱️ **Experience Required:** {target_job.experience_required} years
+
+        📍 **Location:** {target_job.location or 'Not specified'}
+
+        💰 **Salary Range:** {target_job.salary_range or 'Not specified'}
+
+📅 **Posted:** {target_job.created_at.strftime('%B %d, %Y')}
+
+🟢 **Status:** {target_job.status.upper()}
+    """
+    
+            return Response({
+                'session_id': session_id,
+                'message': message,
+                'job_details': {
+                    'id': target_job.id,
+                    'title': target_job.title,
+                    'description': target_job.description,
+                    'required_skills': target_job.required_skills,
+                    'experience_required': target_job.experience_required,
+                    'location': target_job.location,
+                    'salary_range': target_job.salary_range,
+                    'created_at': target_job.created_at.isoformat(),
+                    'status': target_job.status
+                },
+                'success': True
+            })
+            
         # Check for "show all" or "rank all" request
-        if state.stage == 'idle' and any(keyword in user_message.lower() for keyword in ['show all', 'all candidates', 'rank all', 'list all']):
+        elif state.stage == 'idle' and any(keyword in user_message.lower() for keyword in ['show all', 'all candidates', 'rank all', 'list all']):
     
             # Find the job mentioned
             jobs = JobRole.objects.filter(status='active')
@@ -98,6 +206,63 @@ class ChatView(APIView):
                 'candidates': candidates_with_scores,  # Send full data for frontend
                 'job_title': target_job.title,
                 'show_on_screen': True,  # Signal to show on main screen
+                'success': True
+            })
+        
+            
+        # Handle job selection for viewing details (NEW)
+        elif state.stage == 'selecting_job_for_details':
+            jobs = JobRole.objects.filter(status='active')
+            target_job = None
+            
+            for job in jobs:
+                if job.title.lower() in user_message.lower():
+                    target_job = job
+                    break
+    
+            if not target_job:
+                return Response({
+                    'session_id': session_id,
+                    'message': "Job not found. Please enter a valid job title.",
+                    'success': True
+                })
+            
+            state.stage = 'idle'  # Reset state
+            
+            message = f"""
+            📋 **Job Role: {target_job.title}**
+
+            📝 **Description:**
+            {target_job.description}
+
+            🔧 **Required Skills:**
+            {', '.join(target_job.required_skills)}
+
+            ⏱️ **Experience Required:** {target_job.experience_required} years
+
+            📍 **Location:** {target_job.location or 'Not specified'}
+
+            💰 **Salary Range:** {target_job.salary_range or 'Not specified'}
+
+            📅 **Posted:** {target_job.created_at.strftime('%B %d, %Y')}
+
+            🟢 **Status:** {target_job.status.upper()}
+                """
+                
+            return Response({
+                'session_id': session_id,
+                'message': message,
+                'job_details': {
+                    'id': target_job.id,
+                    'title': target_job.title,
+                    'description': target_job.description,
+                    'required_skills': target_job.required_skills,
+                    'experience_required': target_job.experience_required,
+                    'location': target_job.location,
+                    'salary_range': target_job.salary_range,
+                    'created_at': target_job.created_at.isoformat(),
+                    'status': target_job.status
+                },
                 'success': True
             })
         
