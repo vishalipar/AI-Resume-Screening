@@ -150,10 +150,79 @@
         }
     }
     
-    // View job details (expand in modal or navigate)
-    function viewJobDetails(jobId) {
-        // For now, just alert - you can create a modal later
-        alert(`Viewing details for job ID: ${jobId}`);
+    // View job details - Show in modal or new section
+    async function viewJobDetails(jobId) {
+        try {
+            const response = await fetch('/api/job-roles/');
+            const data = await response.json();
+            
+            // Find the specific job
+            const job = data.jobs.find(j => j.id === jobId);
+            if (!job) return;
+            
+            // Create modal or details section
+            const detailsHTML = `
+                <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" id="job-modal">
+                    <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h2 class="text-2xl font-bold text-stone-800">${job.title}</h2>
+                            <button onclick="document.getElementById('job-modal').remove()" class="text-stone-500 hover:text-stone-700">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="font-semibold text-stone-700 mb-1">Description</h3>
+                                <p class="text-stone-600">${job.description}</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-stone-700 mb-1">Required Skills</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    ${job.required_skills.map(skill => 
+                                        `<span class="px-3 py-1 bg-cyan-500/10 text-cyan-700 border border-cyan-500/20 rounded-lg">${skill}</span>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <h3 class="font-semibold text-stone-700 mb-1">Experience Required</h3>
+                                    <p class="text-stone-600">${job.experience_required} years</p>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-stone-700 mb-1">Location</h3>
+                                    <p class="text-stone-600">${job.location || 'Not specified'}</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-stone-700 mb-1">Salary Range</h3>
+                                <p class="text-stone-600">${job.salary_range || 'Not specified'}</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-stone-700 mb-1">Posted Date</h3>
+                                <p class="text-stone-600">${job.created_at}</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-stone-700 mb-1">Status</h3>
+                                <span class="px-3 py-1 ${job.status === 'closed' ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-green-100 text-green-700 border border-green-300'} rounded-full text-sm">${job.status.toUpperCase()}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', detailsHTML);
+            
+        } catch (error) {
+            console.error('Error loading job details:', error);
+        }
     }
     
     // Find candidates for this job
