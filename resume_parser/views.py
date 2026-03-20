@@ -106,6 +106,26 @@ class JobRolesAPIView(APIView):
             })
         
         return Response({'jobs': data})
+        
+    def put(self, request, job_id):
+        """Update a job role"""
+        try:
+            job = JobRole.objects.get(id=job_id)
+            
+            # Update fields
+            job.title = request.data.get('title', job.title)
+            job.description = request.data.get('description', job.description)
+            job.required_skills = request.data.get('required_skills', job.required_skills)
+            job.experience_required = request.data.get('experience_required', job.experience_required)
+            job.location = request.data.get('location', job.location)
+            job.salary_range = request.data.get('salary_range', job.salary_range)
+            job.status = request.data.get('status', job.status)
+            
+            job.save()
+            
+            return Response({'message': 'Job updated successfully'})
+        except JobRole.DoesNotExist:
+            return Response({'error': 'Job not found'}, status=404)
     
     def delete(self, request, job_id):
         """Delete a job role"""

@@ -31,6 +31,7 @@ urlpatterns = [
     
     path('job-roles/', job_roles_view, name='job_roles'),
     path('api/job-roles/', JobRolesAPIView.as_view(), name='job_roles_api'),
+    path('api/job-roles/<int:job_id>/update/', JobRolesAPIView.as_view(), name='job_update'),
     path('api/job-roles/<int:job_id>/delete/', JobRolesAPIView.as_view(), name='job_delete'),
 ] 
 if settings.DEBUG:
