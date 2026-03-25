@@ -7,6 +7,7 @@ import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from .models import UserInfo
+from resume_parser.models import JobRole
 from django.core.mail import send_mail, send_mass_mail
 from django.contrib import messages
 from resume_project.settings import EMAIL_HOST_USER
@@ -72,44 +73,97 @@ def aioutput(request):
     return render(request, 'aioutput.html')
     
 def home(request):
-    context = {'jd_text': None, 'results': []}
+    # Get all active job roles for dropdown
+    job_roles = JobRole.objects.filter(status='active').order_by('-created_at')
+    
+    context = {
+        'jd_text': None, 
+        'results': [],
+        'job_roles': job_roles,
+        'selected_job_title': None,
+        'selected_job_id': None
+    }
     
     if request.method == 'POST':
-        # Handle JD upload
-        if 'jd_file' in request.FILES:
+        jd_mode = request.POST.get('jd_mode')
+        
+        # Handle JD upload from file
+        if jd_mode == 'upload' and 'jd_file' in request.FILES:
             jd_file = request.FILES['jd_file']
             jd_text = extract_text(jd_file)
             request.session['jd_text'] = jd_text
-            context['jd_text'] = jd_text[:300] + "..."
+            request.session['selected_job_id'] = None
+            request.session['selected_job_title'] = None
+            context['jd_text'] = jd_text[:300] + "..." if len(jd_text) > 300 else jd_text
         
-        # Handle resume uploads
-        if 'resume_files' in request.FILES and 'jd_text' in request.session:
+        # Handle JD selection from saved job roles
+        elif jd_mode == 'select' and 'job_role_id' in request.POST:
+            job_id = request.POST.get('job_role_id')
+            try:
+                job = JobRole.objects.get(id=job_id)
+                jd_text = f"{job.title}\n\n{job.description}\n\nRequired Skills: {', '.join(job.required_skills)}\nExperience: {job.experience_required} years\nLocation: {job.location or 'Not specified'}"
+                
+                request.session['jd_text'] = jd_text
+                request.session['selected_job_id'] = job.id
+                request.session['selected_job_title'] = job.title
+                
+                context['jd_text'] = jd_text[:300] + "..." if len(jd_text) > 300 else jd_text
+                context['selected_job_title'] = job.title
+                context['selected_job_id'] = job.id
+            except JobRole.DoesNotExist:
+                context['error'] = 'Selected job role not found'
+        
+        # Handle resume screening
+        elif 'resume_files' in request.FILES and 'jd_text' in request.session:
             jd_text = request.session['jd_text']
             resume_files = request.FILES.getlist('resume_files')
+            selected_job_id = request.session.get('selected_job_id')
             
             results = []
             for resume_file in resume_files:
                 resume_text = extract_text(resume_file)
                 details = extract_resume_details(resume_text)
                 score = match_score(jd_text, resume_text)
+                
                 if score >= 80:
                     status = True
                 else:
                     status = False
-                UserInfo.objects.create(name = details['name'], email = details['email'], skills = details['skills'], score = score, resume = resume_file, status = status)
+                
+                # Create UserInfo with job_role_id if selected from saved JD
+                user_info = UserInfo.objects.create(
+                    name=details['name'],
+                    email=details['email'],
+                    skills=details['skills'],
+                    score=score,
+                    resume=resume_file,
+                    status=status
+                )
+                
+                # Optional: Link to job role if selected from database
+                # if selected_job_id:
+                #     user_info.job_role_id = selected_job_id
+                #     user_info.save()
+                
                 results.append({
                     'name': resume_file.name,
                     'score': f"{score:.2f}"
                 })
             
             context['results'] = results
-            context['jd_text'] = jd_text[:300] + "..."
+            context['jd_text'] = jd_text[:300] + "..." if len(jd_text) > 300 else jd_text
+            context['selected_job_title'] = request.session.get('selected_job_title')
+            context['selected_job_id'] = selected_job_id
     
+    # Load session data if exists
     elif 'jd_text' in request.session:
-        context['jd_text'] = request.session['jd_text'][:300] + "..."
+        jd_text = request.session['jd_text']
+        context['jd_text'] = jd_text[:300] + "..." if len(jd_text) > 300 else jd_text
+        context['selected_job_title'] = request.session.get('selected_job_title')
+        context['selected_job_id'] = request.session.get('selected_job_id')
     
     return render(request, 'home.html', context)
-
+    
 def candidates(request):
     users = UserInfo.objects.all()
     candidates = len(users)

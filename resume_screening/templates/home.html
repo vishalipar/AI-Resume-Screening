@@ -10,39 +10,126 @@
     </h1>
     
     <div class="upload-section rounded-lg">
-        <h3 class='text-md text-stone-600'>Upload Job Description</h3>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="file" name="jd_file" accept=".pdf,.docx,.txt" required>
-            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg' type="submit">Upload JD</button>
-        </form>
+    <h3 class='text-md text-stone-600 mb-4'>Upload Job Description</h3>
+    
+    <!-- Tab Switcher -->
+    <div class="flex gap-2 mb-4">
+        <button type="button" id="upload-jd-tab" onclick="switchJDMode('upload')" 
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg transition-all">
+            Upload JD File
+        </button>
+        <button type="button" id="select-jd-tab" onclick="switchJDMode('select')" 
+            class="px-4 py-2 bg-stone-300 text-stone-700 rounded-lg transition-all">
+            Select Saved JD
+        </button>
     </div>
+    
+    <!-- Upload JD File Form -->
+    <form id="upload-jd-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="jd_mode" value="upload">
+        <div class="space-y-3">
+            <input type="file" name="jd_file" accept=".pdf,.docx,.txt" required
+                class="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
+                Upload JD
+            </button>
+        </div>
+    </form>
+    
+    <!-- Select Saved JD Form -->
+    <form id="select-jd-form" method="post" enctype="multipart/form-data" class="hidden">
+        {% csrf_token %}
+        <input type="hidden" name="jd_mode" value="select">
+        <div class="space-y-3">
+            <select name="job_role_id" required
+                class="block w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500">
+                <option value="">-- Select Job Role --</option>
+                {% for job in job_roles %}
+                <option value="{{ job.id }}">{{ job.title }} ({{ job.experience_required }} years exp)</option>
+                {% endfor %}
+            </select>
+            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
+                Use Selected JD
+            </button>
+        </div>
+    </form>
+</div>
 
-    {% if jd_text %}
-    <div class="upload-section rounded-lg">
-        <h3 class='text-3xl text-stone-800'>Uploaded Job Description:</h3>
-        <p class='text-stone-700 mt-4'>{{ jd_text }}</p>
+{% if jd_text %}
+<div class="upload-section rounded-lg">
+    <h3 class='text-3xl text-stone-800'>Job Description:</h3>
+    <div class="bg-blue-50 p-4 rounded-lg mt-4 border border-blue-200">
+        <p class='text-stone-700'>{{ jd_text }}</p>
+        {% if selected_job_title %}
+        <p class="text-sm text-blue-600 mt-2 font-semibold">Selected: {{ selected_job_title }}</p>
+        {% endif %}
     </div>
+</div>
 
-    <div class="upload-section rounded-lg">
-        <h3 class='text-md text-stone-600'>Upload Resumes</h3>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="file" name="resume_files" accept=".pdf,.docx" multiple required>
-            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg' type="submit">Screen Resumes</button>
-        </form>
-    </div>
-    {% endif %}
+<div class="upload-section rounded-lg">
+    <h3 class='text-md text-stone-600'>Upload Resumes</h3>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="jd_text" value="{{ jd_text }}">
+        {% if selected_job_id %}
+        <input type="hidden" name="job_role_id" value="{{ selected_job_id }}">
+        {% endif %}
+        <div class="space-y-3">
+            <input type="file" name="resume_files" accept=".pdf,.docx" multiple required
+                class="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
+                Screen Resumes
+            </button>
+        </div>
+    </form>
+</div>
+{% endif %}
 
-    {% if results %}
-    <div class="upload-section rounded-lg">
-        <h3 class='text-xl text-stone-700'>Results:</h3>
+{% if results %}
+<div class="upload-section rounded-lg">
+    <h3 class='text-xl text-stone-700 mb-4'>Screening Results:</h3>
+    <div class="space-y-2">
         {% for result in results %}
-        <div class="result text-stone-800">
-            <strong>{{ result.name }}</strong> — Match Score: {{ result.score }}%
+        <div class="result p-4 bg-white border-2 border-stone-200 rounded-lg hover:shadow-md transition-all">
+            <div class="flex justify-between items-center">
+                <strong class="text-stone-800 text-lg">{{ result.name }}</strong>
+                <span class="text-2xl font-bold 
+                    {% if result.score >= 70 %}text-green-600
+                    {% elif result.score >= 50 %}text-yellow-600
+                    {% else %}text-red-600{% endif %}">
+                    {{ result.score }}%
+                </span>
+            </div>
         </div>
         {% endfor %}
     </div>
-    {% endif %}
 </div>
+{% endif %}
+</div>
+
+<script>
+    function switchJDMode(mode) {
+        const uploadForm = document.getElementById('upload-jd-form');
+        const selectForm = document.getElementById('select-jd-form');
+        const uploadTab = document.getElementById('upload-jd-tab');
+        const selectTab = document.getElementById('select-jd-tab');
+        
+        if (mode === 'upload') {
+            uploadForm.classList.remove('hidden');
+            selectForm.classList.add('hidden');
+            uploadTab.classList.add('bg-blue-600', 'text-white');
+            uploadTab.classList.remove('bg-stone-300', 'text-stone-700');
+            selectTab.classList.add('bg-stone-300', 'text-stone-700');
+            selectTab.classList.remove('bg-blue-600', 'text-white');
+        } else {
+            uploadForm.classList.add('hidden');
+            selectForm.classList.remove('hidden');
+            selectTab.classList.add('bg-blue-600', 'text-white');
+            selectTab.classList.remove('bg-stone-300', 'text-stone-700');
+            uploadTab.classList.add('bg-stone-300', 'text-stone-700');
+            uploadTab.classList.remove('bg-blue-600', 'text-white');
+        }
+    }
+</script>
 {% endblock %}
