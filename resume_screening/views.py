@@ -27,7 +27,193 @@ def extract_text_from_pdf(file):
 def extract_text_from_docx(file):
     doc = docx.Document(file)
     return "\n".join([para.text for para in doc.paragraphs])
+    
+def extract_job_title_from_jd(jd_text):
+    """Enhanced job title extraction"""
+    
+    # Pattern 1: Look for "Job Title:" label
+    title_pattern = r'(?:job\s+title|position|role)[\s:]+([^\n]+)'
+    match = re.search(title_pattern, jd_text, re.IGNORECASE)
+    if match:
+        title = match.group(1).strip()
+        # Clean up common suffixes
+        title = re.sub(r'\s*[-:]\s*$', '', title)
+        return title[:100]
+    
+    # Pattern 2: First line if it looks like a title (capitalized, reasonable length)
+    lines = [line.strip() for line in jd_text.split('\n') if line.strip()]
+    if lines:
+        first_line = lines[0]
+        # Check if it's not too long and doesn't contain common description words
+        if 5 <= len(first_line) <= 100 and not any(word in first_line.lower() for word in ['description', 'summary', 'overview', 'reports to']):
+            return first_line
+    
+    return "Untitled Position"
+    
+def extract_skills_from_jd(jd_text):
+    """Enhanced skill extraction with multiple methods"""
+    
+    # Expanded skills database with variations
+    skills_database = {
+        # Software & Tools
+        'microsoft word': ['word', 'ms word', 'microsoft word'],
+        'microsoft excel': ['excel', 'ms excel', 'microsoft excel', 'spreadsheet'],
+        'microsoft office': ['ms office', 'microsoft office', 'office suite'],
+        'powerpoint': ['powerpoint', 'ppt', 'presentations'],
+        
+        # HR Specific
+        'hris': ['hris', 'hr information system', 'human resources information system', 'hris management'],
+        'applicant tracking': ['ats', 'applicant tracking', 'applicant tracking system'],
+        'payroll': ['payroll', 'payroll processing', 'payroll management'],
+        'benefits administration': ['benefits', 'benefits administration', 'employee benefits'],
+        'recruitment': ['recruitment', 'recruiting', 'talent acquisition'],
+        'employee relations': ['employee relations', 'employee engagement'],
+        'performance management': ['performance management', 'performance review'],
+        'compliance': ['compliance', 'hr compliance', 'regulatory compliance'],
+        'employment law': ['employment law', 'labor law', 'hr law'],
+        
+        # Technical
+        'python': ['python'],
+        'java': ['java'],
+        'javascript': ['javascript', 'js'],
+        'sql': ['sql', 'database', 'mysql', 'postgresql'],
+        'html': ['html', 'html5'],
+        'css': ['css', 'css3', 'styling'],
+        'react': ['react', 'reactjs', 'react.js'],
+        'django': ['django'],
+        'node': ['node', 'nodejs', 'node.js'],
+        'aws': ['aws', 'amazon web services', 'cloud'],
+        'docker': ['docker', 'containerization'],
+        'git': ['git', 'github', 'version control'],
+        
+        # Soft Skills
+        'communication': ['communication', 'oral communication', 'written communication'],
+        'leadership': ['leadership', 'team leadership'],
+        'problem solving': ['problem solving', 'analytical'],
+        'time management': ['time management', 'organization'],
+        'teamwork': ['teamwork', 'collaboration', 'team player'],
+        'confidentiality': ['confidentiality', 'confidential'],
+    }
+    
+    found_skills = []
+    jd_lower = jd_text.lower()
+    
+    # Check each skill and its variations
+    for skill_name, variations in skills_database.items():
+        for variation in variations:
+            if variation in jd_lower:
+                # Capitalize properly
+                display_name = skill_name.title() if skill_name.islower() else skill_name.upper()
+                if display_name not in found_skills:
+                    found_skills.append(display_name)
+                break
+    
+    # If no skills found, look for qualification/requirement sections
+    if not found_skills:
+        # Extract from qualifications section
+        qual_pattern = r'(?:qualifications?|requirements?|skills?)[\s:]+([^\n]+(?:\n[^\n]+){0,10})'
+        qual_match = re.search(qual_pattern, jd_text, re.IGNORECASE)
+        if qual_match:
+            qual_text = qual_match.group(1)
+            # Simple word extraction from qualifications
+            common_skills = ['excel', 'word', 'communication', 'management', 'sql', 'python']
+            for skill in common_skills:
+                if skill in qual_text.lower() and skill.title() not in found_skills:
+                    found_skills.append(skill.title())
+    
+    return found_skills if found_skills else ['General']
 
+def extract_experience_from_jd(jd_text):
+    """Enhanced experience extraction"""
+    
+    # Pattern 1: Direct years mention
+    patterns = [
+        r'(\d+)[\+]?\s*(?:years?|yrs?)(?:\s+of)?\s+(?:experience|exp)',
+        r'(?:experience|exp)(?:\s+of)?\s+(\d+)[\+]?\s*(?:years?|yrs?)',
+        r'minimum\s+(?:of\s+)?(\d+)[\+]?\s*(?:years?|yrs?)',
+        r'at\s+least\s+(\d+)[\+]?\s*(?:years?|yrs?)',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, jd_text, re.IGNORECASE)
+        if match:
+            try:
+                return int(match.group(1))
+            except:
+                continue
+    
+    # Check for entry-level, junior, senior keywords
+    jd_lower = jd_text.lower()
+    if any(word in jd_lower for word in ['entry level', 'entry-level', 'fresher', 'graduate', 'intern']):
+        return 0
+    elif any(word in jd_lower for word in ['junior', '1-2 years', '1 to 2']):
+        return 1
+    elif any(word in jd_lower for word in ['mid-level', 'intermediate', '3-5 years']):
+        return 3
+    elif any(word in jd_lower for word in ['senior', 'lead', '5+ years', '5-7 years']):
+        return 5
+    
+    return 0  # Default for no experience mentioned
+
+
+def extract_location_from_jd(jd_text):
+    """Enhanced location extraction"""
+    
+    # Pattern 1: Explicit location label
+    location_patterns = [
+        r'(?:location|office|based\s+(?:in|at)|work\s+location)[\s:]+([^\n]+)',
+        r'(?:city|state|country)[\s:]+([^\n]+)',
+    ]
+    
+    for pattern in location_patterns:
+        match = re.search(pattern, jd_text, re.IGNORECASE)
+        if match:
+            location = match.group(1).strip()
+            # Clean up
+            location = re.sub(r'[,;].*$', '', location)  # Take only first part before comma
+            return location[:100]
+    
+    # Check for common location keywords
+    jd_lower = jd_text.lower()
+    if 'remote' in jd_lower or 'work from home' in jd_lower:
+        return 'Remote'
+    
+    # Look for city names (common US cities as example)
+    common_cities = ['new york', 'san francisco', 'chicago', 'boston', 'austin', 
+                     'seattle', 'los angeles', 'miami', 'denver', 'atlanta']
+    for city in common_cities:
+        if city in jd_lower:
+            return city.title()
+    
+    return ''
+
+
+def extract_jd_details(jd_text):
+    """Main function to extract all JD details"""
+    
+    # Extract title
+    title = extract_job_title_from_jd(jd_text)
+    
+    # Extract skills
+    skills = extract_skills_from_jd(jd_text)
+    
+    # Extract experience
+    experience = extract_experience_from_jd(jd_text)
+    
+    # Extract location
+    location = extract_location_from_jd(jd_text)
+    
+    # Use full text as description (or first 1000 chars)
+    description = jd_text[:1000] if len(jd_text) > 1000 else jd_text
+    
+    return {
+        'title': title,
+        'description': description,
+        'required_skills': skills,
+        'experience_required': experience,
+        'location': location
+    }
+    
 def extract_text(file):
     if file.name.endswith(".pdf"):
         return extract_text_from_pdf(file)
@@ -73,7 +259,6 @@ def aioutput(request):
     return render(request, 'aioutput.html')
     
 def home(request):
-    # Get all active job roles for dropdown
     job_roles = JobRole.objects.filter(status='active').order_by('-created_at')
     
     context = {
@@ -91,11 +276,71 @@ def home(request):
         if jd_mode == 'upload' and 'jd_file' in request.FILES:
             jd_file = request.FILES['jd_file']
             jd_text = extract_text(jd_file)
+            
+            # Extract JD details using improved function
+            jd_details = extract_jd_details(jd_text)
+            
+            # Store extracted details in session for confirmation
             request.session['jd_text'] = jd_text
-            request.session['selected_job_id'] = None
-            request.session['selected_job_title'] = None
+            request.session['pending_jd'] = {
+                'title': jd_details['title'],
+                'description': jd_details['description'],
+                'required_skills': jd_details['required_skills'],
+                'experience_required': jd_details['experience_required'],
+                'location': jd_details['location']
+            }
+            
+            # Show confirmation screen
+            context['show_jd_confirmation'] = True
+            context['jd_details'] = jd_details
             context['jd_text'] = jd_text[:300] + "..." if len(jd_text) > 300 else jd_text
-        
+
+        # Handle JD confirmation after review
+        elif 'confirm_jd' in request.POST and 'pending_jd' in request.session:
+            pending_jd = request.session['pending_jd']
+            
+            # Get manually added/edited skills
+            updated_title = request.POST.get('jd_title', pending_jd['title'])
+            updated_skills = request.POST.get('jd_skills', '')
+            updated_experience = request.POST.get('jd_experience', pending_jd['experience_required'])
+            updated_location = request.POST.get('jd_location', pending_jd['location'])
+            
+            # Parse skills (comma-separated)
+            if updated_skills:
+                skills_list = [s.strip() for s in updated_skills.split(',') if s.strip()]
+            else:
+                skills_list = pending_jd['required_skills']
+            
+            # Create JobRole
+            job_role = JobRole.objects.create(
+                title=updated_title,
+                description=pending_jd['description'],
+                required_skills=skills_list,
+                experience_required=int(updated_experience),
+                location=updated_location,
+                status='active'
+            )
+            
+            # Store in session
+            request.session['selected_job_id'] = job_role.id
+            request.session['selected_job_title'] = job_role.title
+            
+            # Clear pending JD
+            del request.session['pending_jd']
+            
+            context['jd_text'] = request.session['jd_text'][:300] + "..."
+            context['selected_job_title'] = job_role.title
+            context['selected_job_id'] = job_role.id
+            context['jd_saved'] = True
+
+        # Handle cancel JD confirmation
+        elif 'cancel_jd' in request.POST:
+            if 'pending_jd' in request.session:
+                del request.session['pending_jd']
+            if 'jd_text' in request.session:
+                del request.session['jd_text']
+            context['jd_cancelled'] = True 
+              
         # Handle JD selection from saved job roles
         elif jd_mode == 'select' and 'job_role_id' in request.POST:
             job_id = request.POST.get('job_role_id')
@@ -125,25 +370,18 @@ def home(request):
                 details = extract_resume_details(resume_text)
                 score = match_score(jd_text, resume_text)
                 
-                if score >= 80:
-                    status = True
-                else:
-                    status = False
+                status = True if score >= 80 else False
                 
-                # Create UserInfo with job_role_id if selected from saved JD
+                # Create UserInfo and link to job role
                 user_info = UserInfo.objects.create(
                     name=details['name'],
                     email=details['email'],
                     skills=details['skills'],
                     score=score,
                     resume=resume_file,
-                    status=status
+                    status=status,
+                    job_role_id=selected_job_id  # LINK TO JOB ROLE
                 )
-                
-                # Optional: Link to job role if selected from database
-                # if selected_job_id:
-                #     user_info.job_role_id = selected_job_id
-                #     user_info.save()
                 
                 results.append({
                     'name': resume_file.name,
@@ -162,7 +400,7 @@ def home(request):
         context['selected_job_title'] = request.session.get('selected_job_title')
         context['selected_job_id'] = request.session.get('selected_job_id')
     
-    return render(request, 'home.html', context)
+    return render(request, 'home.html', context)  
     
 def candidates(request):
     users = UserInfo.objects.all()

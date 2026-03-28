@@ -10,102 +10,209 @@
     </h1>
     
     <div class="upload-section rounded-lg">
-    <h3 class='text-md text-stone-600 mb-4'>Upload Job Description</h3>
-    
-    <!-- Tab Switcher -->
-    <div class="flex gap-2 mb-4">
-        <button type="button" id="upload-jd-tab" onclick="switchJDMode('upload')" 
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg transition-all">
-            Upload JD File
-        </button>
-        <button type="button" id="select-jd-tab" onclick="switchJDMode('select')" 
-            class="px-4 py-2 bg-stone-300 text-stone-700 rounded-lg transition-all">
-            Select Saved JD
-        </button>
-    </div>
-    
-    <!-- Upload JD File Form -->
-    <form id="upload-jd-form" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="hidden" name="jd_mode" value="upload">
-        <div class="space-y-3">
-            <input type="file" name="jd_file" accept=".pdf,.docx,.txt" required
-                class="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
-                Upload JD
+        <h3 class='text-md text-stone-600 mb-4'>Upload Job Description</h3>
+        
+        <!-- Tab Switcher -->
+        <div class="flex gap-2 mb-4">
+            <button type="button" id="upload-jd-tab" onclick="switchJDMode('upload')" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg transition-all">
+                Upload JD File
+            </button>
+            <button type="button" id="select-jd-tab" onclick="switchJDMode('select')" 
+                class="px-4 py-2 bg-stone-300 text-stone-700 rounded-lg transition-all">
+                Select Saved JD
             </button>
         </div>
-    </form>
-    
-    <!-- Select Saved JD Form -->
-    <form id="select-jd-form" method="post" enctype="multipart/form-data" class="hidden">
-        {% csrf_token %}
-        <input type="hidden" name="jd_mode" value="select">
-        <div class="space-y-3">
-            <select name="job_role_id" required
-                class="block w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500">
-                <option value="">-- Select Job Role --</option>
-                {% for job in job_roles %}
-                <option value="{{ job.id }}">{{ job.title }} ({{ job.experience_required }} years exp)</option>
-                {% endfor %}
-            </select>
-            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
-                Use Selected JD
-            </button>
-        </div>
-    </form>
-</div>
-
-{% if jd_text %}
-<div class="upload-section rounded-lg">
-    <h3 class='text-3xl text-stone-800'>Job Description:</h3>
-    <div class="bg-blue-50 p-4 rounded-lg mt-4 border border-blue-200">
-        <p class='text-stone-700'>{{ jd_text }}</p>
-        {% if selected_job_title %}
-        <p class="text-sm text-blue-600 mt-2 font-semibold">Selected: {{ selected_job_title }}</p>
-        {% endif %}
-    </div>
-</div>
-
-<div class="upload-section rounded-lg">
-    <h3 class='text-md text-stone-600'>Upload Resumes</h3>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="hidden" name="jd_text" value="{{ jd_text }}">
-        {% if selected_job_id %}
-        <input type="hidden" name="job_role_id" value="{{ selected_job_id }}">
-        {% endif %}
-        <div class="space-y-3">
-            <input type="file" name="resume_files" accept=".pdf,.docx" multiple required
-                class="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-            <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
-                Screen Resumes
-            </button>
-        </div>
-    </form>
-</div>
-{% endif %}
-
-{% if results %}
-<div class="upload-section rounded-lg">
-    <h3 class='text-xl text-stone-700 mb-4'>Screening Results:</h3>
-    <div class="space-y-2">
-        {% for result in results %}
-        <div class="result p-4 bg-white border-2 border-stone-200 rounded-lg hover:shadow-md transition-all">
-            <div class="flex justify-between items-center">
-                <strong class="text-stone-800 text-lg">{{ result.name }}</strong>
-                <span class="text-2xl font-bold 
-                    {% if result.score >= 70 %}text-green-600
-                    {% elif result.score >= 50 %}text-yellow-600
-                    {% else %}text-red-600{% endif %}">
-                    {{ result.score }}%
-                </span>
+        
+        <!-- Upload JD File Form -->
+        <form id="upload-jd-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="jd_mode" value="upload">
+            <div class="space-y-3">
+                <input type="file" name="jd_file" accept=".pdf,.docx,.txt" required
+                    class="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
+                    Upload & Extract
+                </button>
             </div>
-        </div>
-        {% endfor %}
+        </form>
+        
+        <!-- Select Saved JD Form -->
+        <form id="select-jd-form" method="post" enctype="multipart/form-data" class="hidden">
+            {% csrf_token %}
+            <input type="hidden" name="jd_mode" value="select">
+            <div class="space-y-3">
+                <select name="job_role_id" required
+                    class="block w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <option value="">-- Select Job Role --</option>
+                    {% for job in job_roles %}
+                    <option value="{{ job.id }}">{{ job.title }} ({{ job.experience_required }} years exp)</option>
+                    {% endfor %}
+                </select>
+                <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
+                    Use Selected JD
+                </button>
+            </div>
+        </form>
     </div>
-</div>
-{% endif %}
+    
+    <!-- JD Confirmation Screen (NEW) -->
+    {% if show_jd_confirmation %}
+    <div class="upload-section rounded-lg border-2 border-yellow-400 bg-yellow-50">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <h3 class='text-xl font-bold text-yellow-800'>Review Extracted JD Details</h3>
+        </div>
+        
+        <p class="text-sm text-yellow-700 mb-4">Please review the auto-extracted information and make any necessary corrections before proceeding.</p>
+        
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- Job Title -->
+            <div>
+                <label class="block text-sm font-semibold text-stone-700 mb-1">Job Title</label>
+                <input type="text" name="jd_title" value="{{ jd_details.title }}" required
+                    class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+            
+            <!-- Required Skills (Editable) -->
+            <div>
+                <label class="block text-sm font-semibold text-stone-700 mb-1">
+                    Required Skills 
+                    <span class="text-xs text-stone-500">(comma-separated)</span>
+                </label>
+                
+                <!-- Show auto-detected skills -->
+                <div class="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-xs text-blue-600 font-semibold mb-2">Auto-Detected Skills:</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% for skill in jd_details.required_skills %}
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm border border-blue-300">
+                            {{ skill }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Editable input -->
+                <input type="text" name="jd_skills" 
+                    value="{{ jd_details.required_skills|join:', ' }}" 
+                    placeholder="Add or remove skills (e.g., Python, Java, SQL)" required
+                    class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500">
+                <p class="text-xs text-stone-500 mt-1">
+                    💡 Tip: Review the auto-detected skills above. Add any missing skills or remove incorrect ones.
+                </p>
+            </div>
+            
+            <!-- Experience Required -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1">Experience (years)</label>
+                    <input type="number" name="jd_experience" value="{{ jd_details.experience_required }}" min="0" required
+                        class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-1">Location</label>
+                    <input type="text" name="jd_location" value="{{ jd_details.location }}" 
+                        placeholder="e.g., Remote, New York"
+                        class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-4">
+                <button type="submit" name="confirm_jd" 
+                    class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg">
+                    ✓ Confirm & Save JD
+                </button>
+                <button type="submit" name="cancel_jd" 
+                    class="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-all">
+                    ✗ Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    
+    <!-- Success Message (after JD saved) -->
+    {% if jd_saved %}
+    <div class="upload-section rounded-lg border-2 border-green-400 bg-green-50">
+        <div class="flex items-center gap-2 mb-2">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class='text-lg font-bold text-green-800'>Job Description Saved!</h3>
+        </div>
+        <p class="text-sm text-green-700">Job role "{{ selected_job_title }}" has been created successfully. You can now upload resumes for screening.</p>
+    </div>
+    {% endif %}
+    
+    <!-- Cancelled Message -->
+    {% if jd_cancelled %}
+    <div class="upload-section rounded-lg border-2 border-stone-400 bg-stone-50">
+        <p class="text-stone-700">Job description upload cancelled.</p>
+    </div>
+    {% endif %}
+    
+    <!-- Resume Upload Form (only show after JD confirmed) -->
+    {% if jd_text and not show_jd_confirmation %}
+    <div class="upload-section rounded-lg">
+        <h3 class='text-3xl text-stone-800 mb-2'>Job Description:</h3>
+        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <p class='text-stone-700'>{{ jd_text }}</p>
+            {% if selected_job_title %}
+            <p class="text-sm text-blue-600 mt-2 font-semibold">Selected: {{ selected_job_title }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="upload-section rounded-lg">
+        <h3 class='text-md text-stone-600'>Upload Resumes for Screening</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="jd_text" value="{{ jd_text }}">
+            {% if selected_job_id %}
+            <input type="hidden" name="job_role_id" value="{{ selected_job_id }}">
+            {% endif %}
+            <div class="space-y-3">
+                <input type="file" name="resume_files" accept=".pdf,.docx" multiple required
+                    class="block w-full text-sm text-stone-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <button class='text-white bg-blue-600 px-[20px] py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all' type="submit">
+                    Screen Resumes
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    
+    {% if results %}
+    <div class="upload-section rounded-lg">
+        <h3 class='text-xl text-stone-700 mb-4'>Screening Results:</h3>
+        {% if selected_job_title %}
+        <p class="text-sm text-blue-600 mb-4 font-semibold">
+            Screened for: {{ selected_job_title }}
+        </p>
+        {% endif %}
+        <div class="space-y-2">
+            {% for result in results %}
+            <div class="result p-4 bg-white border-2 border-stone-200 rounded-lg hover:shadow-md transition-all">
+                <div class="flex justify-between items-center">
+                    <strong class="text-stone-800 text-lg">{{ result.name }}</strong>
+                    <span class="text-2xl font-bold 
+                        {% if result.score|floatformat:0|add:0 >= 70 %}text-green-600
+                        {% elif result.score|floatformat:0|add:0 >= 50 %}text-yellow-600
+                        {% else %}text-red-600{% endif %}">
+                        {{ result.score }}%
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <script>
