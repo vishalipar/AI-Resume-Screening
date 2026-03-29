@@ -469,16 +469,18 @@ def export_candidates(request):
     ws = wb.active
     ws.title = 'Candidates'
     
-    headers = ['Name', 'Email','Match Score', 'Skills', 'Status']
+    headers = ['Name','Email','Role','Match Score', 'Skills', 'Status']
     ws.append(headers)
     
     candidates = UserInfo.objects.all()
     for candidate in candidates:
         skills = ', '.join(candidate.skills) if isinstance(candidate.skills, list) else candidate.skills
         status = 'Shortlisted' if candidate.status else 'Review'
+        role_title = candidate.job_role.title if candidate.job_role else 'Not Assigned'
         ws.append([
             candidate.name,
             candidate.email,
+            role_title,
             f"{candidate.score}%",
             skills,
             status
