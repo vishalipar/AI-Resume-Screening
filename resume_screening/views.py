@@ -280,21 +280,37 @@ def home(request):
             # Extract JD details using improved function
             jd_details = extract_jd_details(jd_text)
             
-            # Store extracted details in session for confirmation
-            request.session['jd_text'] = jd_text
-            request.session['pending_jd'] = {
-                'title': jd_details['title'],
-                'description': jd_details['description'],
-                'required_skills': jd_details['required_skills'],
-                'experience_required': jd_details['experience_required'],
-                'location': jd_details['location']
-            }
+            # CHECK FOR DUPLICATE JD BY TITLE
+            existing_job = JobRole.objects.filter(
+                title__iexact=jd_details['title'],  # Case-insensitive match
+                status='active'
+            ).first()
             
-            # Show confirmation screen
-            context['show_jd_confirmation'] = True
-            context['jd_details'] = jd_details
-            context['jd_text'] = jd_text[:300] + "..." if len(jd_text) > 300 else jd_text
-
+            if existing_job:
+                # Use existing JobRole instead of creating new one
+                request.session['jd_text'] = jd_text
+                request.session['selected_job_id'] = existing_job.id
+                request.session['selected_job_title'] = existing_job.title
+                
+                context['jd_text'] = jd_text[:300] + "..." if len(jd_text) > 300 else jd_text
+                context['selected_job_title'] = existing_job.title
+                context['selected_job_id'] = existing_job.id
+                context['jd_already_exists'] = True  # NEW FLAG
+            else:
+                # Store extracted details in session for confirmation
+                request.session['jd_text'] = jd_text
+                request.session['pending_jd'] = {
+                    'title': jd_details['title'],
+                    'description': jd_details['description'],
+                    'required_skills': jd_details['required_skills'],
+                    'experience_required': jd_details['experience_required'],
+                    'location': jd_details['location']
+                }
+                
+                # Show confirmation screen
+                context['show_jd_confirmation'] = True
+                context['jd_details'] = jd_details
+                context['jd_text'] = jd_text[:300] + "..." if len(jd_text) > 300 else jd_text
         # Handle JD confirmation after review
         elif 'confirm_jd' in request.POST and 'pending_jd' in request.session:
             pending_jd = request.session['pending_jd']
