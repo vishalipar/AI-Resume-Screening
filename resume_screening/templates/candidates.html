@@ -26,11 +26,28 @@
         </div>
     </div>
     {% if candidates %}
-    <div class="mt-6 w-full">
+    <div class="mt-6 flex items-center gap-4">
+        <label class="text-sm font-semibold text-stone-700">Filter by Job Role:</label>
+        <select id="job-filter" onchange="filterByJob()" 
+            class="px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500">
+            <option value="all" {% if selected_job == 'all' %}selected{% endif %}>All Candidates</option>
+            {% for job in job_roles %}
+            <option value="{{ job.id }}" {% if selected_job|stringformat:"s" == job.id|stringformat:"s" %}selected{% endif %}>
+                {{ job.title }} ({{ job.experience_required }} yrs)
+            </option>
+            {% endfor %}
+        </select>
+        
+        <span class="text-sm text-stone-500">
+            Showing {{ candidates }} candidate{{ candidates|pluralize }}
+        </span>
+    </div>
+    <div class="mt-2 w-full">
         <table class='w-full border-separate border-spacing-y-6'>
             <thead>
                 <tr class='text-stone-500 text-[12px]'>
                     <th class='font-semibold text-start'>CANDIDATE</th>
+                    <th class='text-start'>ROLE</th>
                     <th class='text-start'>MATCH SCORE</th>
                     <th class='text-start'>KEY SKILLS</th>
                     <th class='text-start'>STATUS</th>
@@ -43,6 +60,15 @@
                     <td class='flex flex-col'>
                         <span class='text-lg font-semibold'>{{ user.name }}</span>
                         <span class='text-[12px] text-stone-500'>{{ user.email }}</span>
+                    </td>
+                    <td>
+                        {% if user.job_role %}
+                        <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs">
+                            {{ user.job_role.title }}
+                        </span>
+                        {% else %}
+                        <span class="text-stone-400 text-xs">Not assigned</span>
+                        {% endif %}
                     </td>
                     <td class='text-sm font-semibold'>
                         <span class='px-2 py-1 {% if user.score >= 80 %}text-green-800 bg-green-200 {% else %}text-amber-800 bg-amber-100{% endif %} rounded-lg'>
@@ -234,7 +260,7 @@
             }
             
             // Get score from the score column
-            const scoreText = row.querySelectorAll('td')[1].textContent.trim();
+            const scoreText = row.querySelectorAll('td')[2].textContent.trim();
             const score = parseInt(scoreText.replace('%', ''));
             
             if (score >= min && score <= max) {
@@ -243,6 +269,13 @@
                 row.style.display = 'none';
             }
         });
+    }
+    function filterByJob() {
+        const select = document.getElementById('job-filter');
+        const jobId = select.value;
+        
+        // Redirect with filter parameter
+        window.location.href = `?job_role=${jobId}`;
     }
 </script>
 

@@ -419,12 +419,25 @@ def home(request):
     return render(request, 'home.html', context)  
     
 def candidates(request):
-    users = UserInfo.objects.all()
-    candidates = len(users)
+    # Get filter parameter
+    job_filter = request.GET.get('job_role', 'all')
+    
+    # Filter users based on selection
+    if job_filter == 'all':
+        users = UserInfo.objects.all()
+    else:
+        users = UserInfo.objects.filter(job_role_id=job_filter)
+    
+    # Get all job roles for dropdown
+    job_roles = JobRole.objects.filter(userinfo__isnull=False).distinct().order_by('-created_at')
+    
+    candidates = users.count()
     
     context = {
-        'candidates':candidates,
-        'users':users,
+        'candidates': candidates,
+        'users': users,
+        'job_roles': job_roles,
+        'selected_job': job_filter,
     }
     return render(request, 'candidates.html', context)
     
