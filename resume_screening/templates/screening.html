@@ -212,95 +212,11 @@
                     addMessage('bot', `<div class="text-${scoreColor}-600 font-bold text-2xl">${data.match_score}% Match</div>`);
                 }
                 
-                // NEW: Display candidates on main screen if requested
-                if (data.show_on_screen && data.candidates) {
-                    displayCandidatesOnMainScreen(data.candidates, data.job_title);
-                }
-                
             } catch (error) {
                 typingIndicator.classList.add('hidden');
                 addMessage('bot', 'Sorry, I encountered an error. Please try again.');
                 console.error('Error:', error);
             }
-        }
-        
-        // NEW FUNCTION: Display candidates on main screen
-        function displayCandidatesOnMainScreen(candidates, jobTitle) {
-            // Get the main content area
-            const mainContent = document.getElementById('mainContent');
-            
-            // Create candidates section
-            const candidatesSection = document.createElement('div');
-            candidatesSection.className = 'max-w-[70vw] mx-auto mt-8';
-            candidatesSection.innerHTML = `
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-stone-50 mb-2">Candidates for ${jobTitle}</h2>
-                    <p class="text-stone-100">Ranked by match score (highest to lowest)</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="candidates-grid">
-                </div>
-            `;
-            
-            // Clear existing content and add new section
-            mainContent.innerHTML = '';
-            mainContent.appendChild(candidatesSection);
-            
-            const grid = document.getElementById('candidates-grid');
-            
-            // Create candidate cards
-            candidates.forEach((candidate, index) => {
-                const matchColor = candidate.match_score >= 80 ? 'green' : 
-                                  candidate.match_score >= 60 ? 'yellow' : 
-                                  candidate.match_score >= 40 ? 'orange' : 'red';
-                
-                const rankBadge = index === 0 ? '🥇 #1' : 
-                                 index === 1 ? '🥈 #2' : 
-                                 index === 2 ? '🥉 #3' : `#${index + 1}`;
-                
-                const card = document.createElement('div');
-                card.className = 'bg-white border-2 border-stone-200 rounded-xl p-5 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer';
-                
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <div class="text-xs font-semibold text-${matchColor}-600 mb-1">${rankBadge}</div>
-                            <h3 class="text-lg font-bold text-stone-800">${candidate.name}</h3>
-                            <p class="text-sm text-stone-500">${candidate.email}</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-3xl font-bold text-${matchColor}-600">${Math.round(candidate.match_score)}%</div>
-                            <div class="text-xs text-stone-500">Match</div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="flex items-center gap-2 text-sm text-stone-600 mb-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
-                            <span>${candidate.experience_years} years experience</span>
-                        </div>
-                        
-                        <div class="flex flex-wrap gap-1">
-                            ${candidate.skills.slice(0, 5).map(skill => 
-                                `<span class="px-2 py-1 text-xs rounded-md bg-cyan-500/10 text-cyan-700 border border-cyan-500/20">${skill}</span>`
-                            ).join('')}
-                            ${candidate.skills.length > 5 ? `<span class="px-2 py-1 text-xs text-stone-500">+${candidate.skills.length - 5} more</span>` : ''}
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-2 mt-4">
-                        <button class="flex-1 px-3 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-all">
-                            View Details
-                        </button>
-                        <button class="px-3 py-2 bg-green-500/10 text-green-700 rounded-lg text-sm font-medium border border-green-500/20 hover:bg-green-500/20 transition-all">
-                            Shortlist
-                        </button>
-                    </div>
-                `;
-                
-                grid.appendChild(card);
-            });
         }
     
         // Add message to chat
