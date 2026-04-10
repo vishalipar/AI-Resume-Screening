@@ -255,9 +255,6 @@ def extract_resume_details(resume_text):
         'skills': found_skills[:5]  # Top 5 skills
     }
     
-def aioutput(request):
-    return render(request, 'aioutput.html')
-    
 def home(request):
     job_roles = JobRole.objects.filter(status='active').order_by('-created_at')
     
