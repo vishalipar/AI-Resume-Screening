@@ -20,13 +20,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from chat_bot.views import ChatView
-from resume_parser.views import ResumeUploadView, JobRoleView, job_roles_view, JobRolesAPIView
+from resume_parser.views import JobRoleView, job_roles_view, JobRolesAPIView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include('resume_screening.urls')),
     path('api/chat/', ChatView.as_view(), name='chat'),
-    path('api/resume/upload/', ResumeUploadView.as_view(), name='resume_upload'),
     path('api/jobs/', JobRoleView.as_view(), name='jobs'),
     
     path('job-roles/', job_roles_view, name='job_roles'),

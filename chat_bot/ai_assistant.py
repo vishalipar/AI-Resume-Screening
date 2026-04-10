@@ -1,6 +1,6 @@
 from groq import Groq
 from django.conf import settings
-from resume_parser.models import JobRole, Resume
+from resume_parser.models import JobRole
 import re
 import json
 
@@ -8,16 +8,9 @@ client = Groq(api_key=settings.GROQ_API_KEY)
 
 class AIAssistant:
     def chat(self, user_message):
-         # Get context from database
-        recent_resume = Resume.objects.last()
         active_jobs = JobRole.objects.filter(status='active')
         
         context = ""
-        resume_count = Resume.objects.count()
-        if resume_count > 0:
-            context += f"\nTotal resumes in database: {resume_count}"
-            recent_resume = Resume.objects.last()
-            context += f"\nMost recent: {recent_resume.name}, Skills: {', '.join(recent_resume.skills)}"
         
         if active_jobs.exists():
             context += f"\nActive jobs: {', '.join([j.title for j in active_jobs])}"
