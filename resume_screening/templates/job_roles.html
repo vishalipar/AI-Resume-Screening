@@ -27,11 +27,130 @@
                     <button id="create-job-btn-page" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 transition-all flex items-center gap-2">
                         Create Using AI
                     </button>
-                    <button class="px-4 py-2 text-blue-800 hover:text-blue-900 rounded-lg font-medium flex items-center border-2 border-blue-700 hover:border-blue-900 gap-2">
+                    <button onclick="openManualFormPopup()" class="px-4 py-2 text-blue-800 hover:text-blue-900 rounded-lg font-medium flex items-center border-2 border-blue-700 hover:border-blue-900 gap-2">
                         Create Manually Using Form
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Manual Job Creation Popup Modal -->
+    <div id="manual-job-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-stone-200 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-stone-800">Create New Job Role</h2>
+                <button onclick="closeManualFormPopup()" class="text-stone-500 hover:text-stone-700 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="manual-job-form" class="p-6 space-y-5">
+                {% csrf_token %}
+                <!-- Job Title -->
+                <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-2">
+                        Job Title <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="title" id="manual-title" required
+                        placeholder="e.g., Senior Python Developer"
+                        class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                </div>
+                <!-- Job Description -->
+                <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-2">
+                        Job Description <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="description" id="manual-description" rows="5" required
+                        placeholder="Describe the role, responsibilities, and what the candidate will do..."
+                        class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"></textarea>
+                    <p class="text-xs text-stone-500 mt-1">Minimum 50 characters</p>
+                </div>
+                <!-- Required Skills -->
+                <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-2">
+                        Required Skills <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="skills" id="manual-skills" required
+                        placeholder="e.g., Python, Django, PostgreSQL, AWS, Docker"
+                        class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                    <p class="text-xs text-stone-500 mt-1">Comma-separated skills</p>
+                </div>
+                <!-- Experience and Location Row -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-stone-700 mb-2">
+                            Experience Required (years) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="experience" id="manual-experience" min="0" max="30" required
+                            placeholder="e.g., 3"
+                            class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-stone-700 mb-2">
+                            Location
+                        </label>
+                        <input type="text" name="location" id="manual-location"
+                            placeholder="e.g., Remote, New York, Bangalore"
+                            class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                    </div>
+                </div>
+                <!-- Salary Range and Education -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-stone-700 mb-2">
+                            Salary Range
+                        </label>
+                        <input type="text" name="salary_range" id="manual-salary"
+                            placeholder="e.g., $80k - $120k"
+                            class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-stone-700 mb-2">
+                            Education Level
+                        </label>
+                        <select name="education_level" id="manual-education"
+                            class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                            <option value="">Not Specified</option>
+                            <option value="High School">High School</option>
+                            <option value="Bachelor's Degree">Bachelor's Degree</option>
+                            <option value="Master's Degree">Master's Degree</option>
+                            <option value="PhD">PhD</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Status -->
+                <div>
+                    <label class="block text-sm font-semibold text-stone-700 mb-2">
+                        Status <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="status" value="active" checked
+                                class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm text-stone-700">Active</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="status" value="closed"
+                                class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm text-stone-700">Closed</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- Form Actions -->
+                <div class="flex gap-3 pt-4 border-t border-stone-200">
+                    <button type="submit" 
+                        class="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg">
+                        Create Job Role
+                    </button>
+                    <button type="button" onclick="closeManualFormPopup()" 
+                        class="px-6 py-3 bg-stone-200 text-stone-700 rounded-lg font-semibold hover:bg-stone-300 transition-all">
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -422,6 +541,63 @@
         });
     }
     
+    // Open manual form popup
+    function openManualFormPopup() {
+        document.getElementById('manual-job-modal').classList.remove('hidden');
+        document.getElementById('create-job-options').classList.add('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+    }
+
+    // Close manual form popup
+    function closeManualFormPopup() {
+        document.getElementById('manual-job-modal').classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Restore scroll
+        document.getElementById('manual-job-form').reset();
+    }
+
+    // Handle manual form submission
+    document.getElementById('manual-job-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const skills = formData.get('skills').split(',').map(s => s.trim()).filter(s => s);
+        
+        const jobData = {
+            title: formData.get('title'),
+            description: formData.get('description'),
+            required_skills: skills,
+            experience_required: parseInt(formData.get('experience')),
+            location: formData.get('location') || '',
+            salary_range: formData.get('salary_range') || '',
+            education_level: formData.get('education_level') || '',
+            status: formData.get('status')
+        };
+        
+        try {
+            const response = await fetch('/api/jobs/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: JSON.stringify(jobData)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                closeManualFormPopup();
+                loadJobs(); // Reload jobs list
+                
+                // Show success message
+                alert(`✅ Job role "${data.title}" created successfully!`);
+            } else {
+                alert('Failed to create job role. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        }
+    });
     
 </script>
 {% endblock %}
