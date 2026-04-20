@@ -213,7 +213,7 @@
     // Create job card
     function createJobCard(job) {
         const card = document.createElement('div');
-        card.className = 'bg-white border-2 border-stone-200 rounded-xl p-6 hover:shadow-lg transition-all hover:-translate-y-1';
+        card.className = 'bg-white border-2 border-stone-200 rounded-xl p-6';
         
         const statusColor = job.status === 'active' ? 'green' : job.status === 'closed' ? 'red' : 'yellow';
         
@@ -278,7 +278,7 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="viewJobDetails(${job.id})" class="flex-1 px-3 py-2 bg-cyan-500/10 text-cyan-700 rounded-lg text-sm font-medium border border-cyan-500/20 hover:bg-cyan-500/20 transition-all">
+                    <button onclick="viewJobDetails(${job.id})" class="flex-1 px-3 py-2 text-cyan-700 rounded-lg text-sm font-medium border border-cyan-400 hover:bg-cyan-500/20 transition-all">
                         View Full Details
                     </button>
                     <button onclick="findCandidates(${job.id}, '${job.title}')" class="flex-1 px-3 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-all">
