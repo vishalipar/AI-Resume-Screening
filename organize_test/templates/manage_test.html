@@ -3,7 +3,7 @@
 {% block title %}Manage Test{% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-2xl shadow-lg">
+<div class="bg-white rounded-2xl shadow-sm">
     <div class="flex flex-col gap-2 p-6 bg-blue-800 rounded-b rounded-2xl">
         <p class='text-white text-3xl font-semibold'>Add Question to Test</p>
         <p class='text-stone-100'>Python Developer Assessment</p>
@@ -33,7 +33,7 @@
     </div>
 </div>
 {% if questions %}
-<div class="bg-white p-6 mt-9 rounded-2xl shadow-lg">
+<div class="bg-white p-6 mt-9 rounded-2xl shadow-sm">
     <div class="flex justify-between items-center">
         <p class='text-stone-700 text-lg font-semibold'>Available Questions (42)</p>
         <p class='text-blue-800'>Select All</p>
@@ -82,6 +82,7 @@
     Add Questions to Test
 </button>
 {% endif %}
+<div id="questionsContainer" class="mt-6 space-y-4"></div>
 
 <div id="create-question-options" class="hidden flex fixed items-center justify-center bg-black/50 inset-0 z-50">
     <div class="h-fit w-[43vw] bg-white py-9 px-6 border border-stone-100 rounded-xl relative">
@@ -89,7 +90,7 @@
         <div class="flex flex-col gap-6">
             <p class='text-stone-700 text-xl font-bold'>Create New Questions</p>
             <div class="flex justify-between">
-                <button onclick="createUsingChatbot()" 
+                <button onclick="openAI()" 
                 class="w-fit text-left px-4 py-3 hover:bg-blue-50 transition-all flex items-center gap-3 border border-blue-400 rounded-lg">
                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
@@ -112,6 +113,73 @@
     </div>
 </div>
 
+<div id="ai-generator" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="w-[50vw] bg-white rounded-xl p-6 relative">
+  
+      <!-- Close -->
+      <button onclick="closeAI()" class="absolute top-3 right-4 text-red-500">X</button>
+  
+      <h2 class="text-xl font-bold mb-4">Generate Questions using AI</h2>
+  
+      <!-- Paragraph -->
+      <textarea id="paragraph" placeholder="Enter paragraph..."
+        class="w-full border rounded-lg p-3 mb-4 h-28"></textarea>
+  
+      <!-- Type -->
+      <div class="flex gap-3 mb-4">
+        <div class="flex-1">
+            <span class='text-stone-600 mb-2 block'>Question Type</span>
+            <select id="type" onchange="toggleMCQOptions()" class="border p-2 rounded w-full">
+            <option>MCQ</option>
+            <option>MCQ Multiple Correct</option>
+            <option>True/False</option>
+            <option>FAQ</option>
+            <option>Short Answer</option>
+            <option>High Order QA</option>
+            </select>
+        </div>
+        <div class="flex flex-1 flex-col w-full">
+            <span class='text-stone-600 mb-2 block'>Question Count</span>
+            <select id="count" class="border p-2 rounded">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            </select>
+        </div>
+      </div>
+  
+      <!-- Difficulty -->
+      <div class="flex gap-3 mb-4">
+        <div class="flex-1">
+            <span class='text-stone-600 mb-2 block'>Difficulty Level</span>
+            <select id="difficulty" class="border p-2 rounded w-full mb-3">
+                <option>Easy</option>
+                <option>Medium</option>
+                <option>Hard</option>
+            </select>
+        </div>
+        <div class="flex-1">
+            <span class='text-stone-600 mb-2 block'>MCQ Options Count</span>
+            <!-- MCQ Options -->
+            <select id="mcqOptions" class="border p-2 rounded w-full mb-4">
+                <option value="3">3 Options</option>
+                <option value="4">4 Options</option>
+            </select>
+        </div>
+      </div>
+  
+      <!-- Button -->
+      <button id="generateBtn" onclick="generateQuestions()"
+        class="bg-blue-600 text-white px-4 py-2 rounded w-full flex items-center justify-center gap-2">
+        <span id="btnText">Generate Questions</span>
+        <span id="loader" class="hidden animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+      </button>
+  
+    </div>
+  </div>
+
 <script>
     const overlay = document.getElementById('create-question-options');
 
@@ -120,6 +188,85 @@
             closeqModal();
         }
     });
+    
+    function openAI(){
+        // close first modal
+        document.getElementById('create-question-options').classList.add('hidden');
+        
+        // open AI modal
+        document.getElementById('ai-generator').classList.remove('hidden');
+    }
+    
+    function closeAI(){
+        document.getElementById('ai-generator').classList.add('hidden');
+    }
+    
+    function toggleMCQOptions(){
+        const type = document.getElementById("type").value;
+        const mcq = document.getElementById("mcqOptions");
+    
+        if(type.includes("MCQ")){
+          mcq.style.display = "block";
+        } else {
+          mcq.style.display = "none";
+        }
+      }
+    
+      function generateQuestions(){
+        const btn = document.getElementById("generateBtn");
+        const text = document.getElementById("btnText");
+        const loader = document.getElementById("loader");
+      
+        // 🔥 Show loading
+        text.innerText = "Generating...";
+        loader.classList.remove("hidden");
+        btn.disabled = true;
+      
+        const data = {
+          paragraph: document.getElementById("paragraph").value,
+          type: document.getElementById("type").value,
+          count: document.getElementById("count").value,
+          difficulty: document.getElementById("difficulty").value,
+          mcq_options: document.getElementById("mcqOptions").value
+        };
+      
+        fetch('/test/generate-questions/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+          let questions = res.questions;
+      
+          if (typeof questions === "string") {
+            questions = JSON.parse(questions);
+          }
+      
+          renderQuestions(questions);
+      
+          // 🔥 Close modal after success
+          closeAI();
+        })
+        .catch(err => console.error(err))
+        .finally(() => {
+          // 🔥 Reset button
+          text.innerText = "Generate Questions";
+          loader.classList.add("hidden");
+          btn.disabled = false;
+        });
+      }
+      
+      // CSRF token (Django required)
+      function getCSRFToken(){
+        return document.cookie.split('; ')
+          .find(row => row.startsWith('csrftoken'))
+          ?.split('=')[1];
+      }
+      
     function openOptions(){
         overlay.classList.remove('hidden')
     }
@@ -127,6 +274,38 @@
     function closeqModal(){
         overlay.classList.add('hidden')
     }
+    
+    function renderQuestions(questions){
+        const container = document.getElementById("questionsContainer");
+        container.innerHTML = "";
+      
+        questions.forEach((q, index) => {
+          const optionsHTML = q.options ? q.options.map((opt, i) => `
+            <input type="text" value="${opt}" 
+              class="border p-2 rounded w-full mb-2" />
+          `).join('') : '';
+      
+          const card = `
+            <div class="p-4 border rounded-lg bg-white shadow">
+              
+              <!-- Question -->
+              <textarea class="w-full border p-2 rounded mb-3">
+      ${q.question}
+              </textarea>
+      
+              <!-- Options -->
+              ${optionsHTML}
+      
+              <!-- Answer -->
+              <input type="text" value="${q.answer}" 
+                class="border p-2 rounded w-full mt-2" />
+      
+            </div>
+          `;
+      
+          container.innerHTML += card;
+        });
+      }
 </script>
 
 {% endblock %}

@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from .models import newTest, Position, Question, QuestionOption
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .utils import generate_questions
 # Create your views here.
 
 def organize_test(request):
@@ -83,3 +85,15 @@ def add_question(request):
     
 def manage_test(request):
     return render(request, 'manage_test.html')
+    
+class GenerateQuestionsAPI(APIView):
+    def post(self, request):
+        paragraph = request.data.get("paragraph")
+        q_type = request.data.get("type")
+        count = request.data.get("count")
+        difficulty = request.data.get("difficulty")
+        mcq_options = request.data.get("mcq_options")
+
+        data = generate_questions(paragraph, q_type, count, difficulty, mcq_options)
+        return Response({"questions": data})
+        
