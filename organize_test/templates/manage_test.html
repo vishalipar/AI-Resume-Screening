@@ -32,56 +32,71 @@
         </div>
     </div>
 </div>
-{% if questions %}
-<div class="bg-white p-6 mt-9 rounded-2xl shadow-sm">
-    <div class="flex justify-between items-center">
-        <p class='text-stone-700 text-lg font-semibold'>Available Questions (42)</p>
-        <p class='text-blue-800'>Select All</p>
-    </div>
-    <div class="flex flex-col gap-6 mt-4">
-        <div class="">
-            <div class="flex justify-between py-4 px-3 border border-stone-300 rounded-lg">
-                <div class="flex gap-4">
-                    <input type="checkbox" name="" id="" class='w-5 h-5'>
-                    <div class="flex flex-col gap-2">
-                        <p class='text-stone-700 font-semibold'>
-                            What is the output of print(type([]))?
-                        </p>
-                        <div class="ml-5 text-stone-600">
-                            <p>A) &lt;class 'list'&gt; </p>
-                            <p>B) &lt;class 'dict'&gt; </p>
-                            <p>C) &lt;class 'tuple'&gt; </p>
-                            <p>D) &lt;class 'set'&gt;</p>
-                        </div>
-                        <div class="flex gap-3 text-sm">
-                            <span class='text-green-800 bg-green-100 py-1 px-3 rounded-lg'>Easy</span>
-                            <span class='text-purple-800 bg-purple-100 py-1 px-3 rounded-lg'>MCQ</span>
-                        </div>
-                    </div>
-                </div>
-                <p class='text-blue-800'>2 marks</p>
-            </div>
-        </div>
-        <div class="flex justify-between">
-            <a href="{% url 'organize_test' %}" class='flex items-center gap-2 w-fit px-5 py-3 text-stone-700 bg-stone-200 rounded-lg'>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-left-icon lucide-move-left"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
-                Back to Test Details
-            </a>
-            <div class="flex gap-3">
-                <button type="button" class='px-6 py-3 text-blue-700 font-semibold border border-blue-700 rounded-lg'>Save as Draft</button>
-                <a href='{% url "add_question" %}' type="submit" class='flex items-center gap-2 px-6 py-3 text-stone-100 font-semibold bg-blue-700 rounded-lg'>
-                    Add Question to Test
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-right-icon lucide-move-right"><path d="M18 8L22 12L18 16"/><path d="M2 12H22"/></svg>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-{% else %}
-<button onclick="openOptions()" class='flex items-center gap-2 w-fit mx-auto mt-9 px-6 py-3 text-stone-100 font-semibold bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg'>
+
+<button onclick="openOptions()" class='flex items-center gap-2 w-fit mx-auto my-9 px-6 py-3 text-stone-100 font-semibold bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg'>
     Add Questions to Test
 </button>
+{% if questions %}
+    {% for q in questions %}
+    <div class="p-4 mb-3 border rounded-lg bg-white shadow-sm relative question-card" data-id="{{ q.id }}">
+        <div class="absolute top-6 right-5 flex gap-2">
+            <button onclick="enableEdit(this)" class="text-blue-500 hover:text-blue-700 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+            </button>
+            <button onclick="deleteQuestionDB({{ q.id }}, this)" class="text-red-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="flex gap-3 text-stone-500">
+            <span class='w-12'>Que.{{ forloop.counter }}.</span>
+            <!-- Editable Question -->
+            <textarea readonly class="w-[85%] border font-semibold p-2 rounded mb-1 question-input border-0 bg-transparent pointer-events-none focus:outline-none resize-none leading-tight overflow-hidden">{{ q.question }}</textarea>
+        </div>
+        <!-- Editable Options -->
+        {% if q.options %}
+        <div class="flex gap-3">
+            <div class="w-6"></div>
+            <div class="w-full">
+                {% for opt in q.options %}
+                <p class="flex items-center gap-2">
+                    <span class='text-stone-700'>
+                        {% if forloop.counter == 1 %}A.
+                        {% elif forloop.counter == 2 %}B.
+                        {% elif forloop.counter == 3 %}C.
+                        {% elif forloop.counter == 4 %}D.
+                        {% elif forloop.counter == 5 %}E.
+                        {% endif %}
+                    </span>
+                    <input type="text" value="{{ opt }}" 
+                    readonly class="p-2 rounded w-[88%] mb-2 option-input border-0 bg-transparent pointer-events-none focus:outline-none" />
+                </p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Editable Answer -->
+        <div class="flex gap-3 items-center">
+            <span class='text-stone-600 w-12'>Ans. -</span>
+            <input type="text" value="{{ q.answer }}" 
+            readonly class="p-2 text-stone-600 rounded w-[85%] mt-2 answer-input border-0 bg-transparent pointer-events-none focus:outline-none" />
+        </div>
+    </div>
+    {% endfor %}
+    <!-- Save Button -->
+    <button onclick="updateQuestions()" 
+    class="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-3 rounded mt-4">
+    Save Changes
+    </button>
+{% else %}
+<p>No Questions Set</p>
 {% endif %}
+
 <div id="questionsContainer" class="mt-6 space-y-4"></div>
 
 <div id="create-question-options" class="hidden flex fixed items-center justify-center bg-black/50 inset-0 z-50">
@@ -161,7 +176,7 @@
             </select>
         </div>
         <div class="flex-1">
-            <span class='text-stone-600 mb-2 block'>MCQ Options Count</span>
+            <span id="mcqCount" class='text-stone-600 mb-2 block'>MCQ Options Count</span>
             <!-- MCQ Options -->
             <select id="mcqOptions" class="border p-2 rounded w-full mb-4">
                 <option value="3">3 Options</option>
@@ -178,7 +193,7 @@
       </button>
   
     </div>
-  </div>
+</div>
 
 <script>
     const overlay = document.getElementById('create-question-options');
@@ -204,68 +219,71 @@
     function toggleMCQOptions(){
         const type = document.getElementById("type").value;
         const mcq = document.getElementById("mcqOptions");
+        const count = document.getElementById("mcqCount");
     
         if(type.includes("MCQ")){
           mcq.style.display = "block";
+          count.style.display = "block";
         } else {
           mcq.style.display = "none";
+          count.style.display = "none";
         }
-      }
+    }
     
-      function generateQuestions(){
-        const btn = document.getElementById("generateBtn");
-        const text = document.getElementById("btnText");
-        const loader = document.getElementById("loader");
+    function generateQuestions(){
+    const btn = document.getElementById("generateBtn");
+    const text = document.getElementById("btnText");
+    const loader = document.getElementById("loader");
+    
+    // 🔥 Show loading
+    text.innerText = "Generating...";
+    loader.classList.remove("hidden");
+    btn.disabled = true;
+    
+    const data = {
+        paragraph: document.getElementById("paragraph").value,
+        type: document.getElementById("type").value,
+        count: document.getElementById("count").value,
+        difficulty: document.getElementById("difficulty").value,
+        mcq_options: document.getElementById("mcqOptions").value
+    };
+    
+    fetch('/test/generate-questions/', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(res => {
+        let questions = res.questions;
+    
+        if (typeof questions === "string") {
+        questions = JSON.parse(questions);
+        }
+    
+        renderQuestions(questions);
+    
+        // 🔥 Close modal after success
+        closeAI();
+    })
+    .catch(err => console.error(err))
+    .finally(() => {
+        // 🔥 Reset button
+        text.innerText = "Generate Questions";
+        loader.classList.add("hidden");
+        btn.disabled = false;
+    });
+    }
       
-        // 🔥 Show loading
-        text.innerText = "Generating...";
-        loader.classList.remove("hidden");
-        btn.disabled = true;
-      
-        const data = {
-          paragraph: document.getElementById("paragraph").value,
-          type: document.getElementById("type").value,
-          count: document.getElementById("count").value,
-          difficulty: document.getElementById("difficulty").value,
-          mcq_options: document.getElementById("mcqOptions").value
-        };
-      
-        fetch('/test/generate-questions/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-          },
-          body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(res => {
-          let questions = res.questions;
-      
-          if (typeof questions === "string") {
-            questions = JSON.parse(questions);
-          }
-      
-          renderQuestions(questions);
-      
-          // 🔥 Close modal after success
-          closeAI();
-        })
-        .catch(err => console.error(err))
-        .finally(() => {
-          // 🔥 Reset button
-          text.innerText = "Generate Questions";
-          loader.classList.add("hidden");
-          btn.disabled = false;
-        });
-      }
-      
-      // CSRF token (Django required)
-      function getCSRFToken(){
-        return document.cookie.split('; ')
-          .find(row => row.startsWith('csrftoken'))
-          ?.split('=')[1];
-      }
+    // CSRF token (Django required)
+    function getCSRFToken(){
+    return document.cookie.split('; ')
+        .find(row => row.startsWith('csrftoken'))
+        ?.split('=')[1];
+    }
       
     function openOptions(){
         overlay.classList.remove('hidden')
@@ -280,32 +298,316 @@
         container.innerHTML = "";
       
         questions.forEach((q, index) => {
-          const optionsHTML = q.options ? q.options.map((opt, i) => `
-            <input type="text" value="${opt}" 
-              class="border p-2 rounded w-full mb-2" />
-          `).join('') : '';
+      
+          const optionsHTML = q.options ? q.options.map((opt, i) => {
+      
+            const label = ["A.", "B.", "C.", "D.", "E."][i] || "";
+      
+            return `
+              <p class="flex items-center gap-2">
+                <span class="text-stone-700">${label}</span>
+                <input type="text" value="${opt}" 
+                  class="border p-2 rounded w-[88%] mb-2 option-input" />
+              </p>
+            `;
+          }).join('') : '';
       
           const card = `
-            <div class="p-4 border rounded-lg bg-white shadow">
-              
+            <div class="p-4 mb-3 border rounded-lg bg-white shadow-sm relative question-card">
+              <!-- Buttons -->
+              <div class="absolute top-6 right-5">      
+                <button onclick="deleteQuestion(this)" class="text-red-500">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+      
               <!-- Question -->
-              <textarea class="w-full border p-2 rounded mb-3">
-      ${q.question}
-              </textarea>
+              <div class="flex gap-3 text-stone-500">
+                <span class="w-12">Que.${index + 1}.</span>
+                <textarea class="w-[85%] border font-semibold p-2 rounded mb-3 question-input">${q.question}</textarea>
+              </div>
       
               <!-- Options -->
-              ${optionsHTML}
+              ${q.options ? `
+              <div class="flex gap-3">
+                <div class="w-6"></div>
+                <div class="w-full">
+                  ${optionsHTML}
+                </div>
+              </div>` : ''}
       
               <!-- Answer -->
-              <input type="text" value="${q.answer}" 
-                class="border p-2 rounded w-full mt-2" />
+              <div class="flex gap-3 items-center">
+                <span class="text-stone-600 w-12">Ans. -</span>
+                <input type="text" value="${q.answer}" 
+                  class="border p-2 text-stone-600 rounded w-[85%] mt-2 answer-input" />
+              </div>
       
             </div>
           `;
       
           container.innerHTML += card;
         });
-      }
+      
+        if (questions.length > 0) {
+            container.innerHTML += `
+              <button onclick="saveQuestions()" 
+              class="bg-green-600 text-white px-6 py-3 rounded mt-4">
+              Save to DB
+              </button>
+            `;
+            }
+    }
+    
+    function deleteQuestion(btn){
+        const card = btn.closest(".question-card");
+        card.remove();
+      
+        const container = document.getElementById("questionsContainer");
+        const remaining = container.querySelectorAll(".question-card");
+      
+        if (remaining.length === 0) {
+          container.innerHTML = ""; // removes Save button too
+        }
+    }
+    
+    function saveQuestions(){
+        const cards = document.querySelectorAll(".question-card");
+      
+        let questions = [];
+      
+        cards.forEach(card => {
+          // ❌ skip already saved (has id)
+          if (card.dataset.id) return;
+      
+          const question = card.querySelector(".question-input").value;
+          const answer = card.querySelector(".answer-input").value;
+      
+          const options = [...card.querySelectorAll(".option-input")]
+            .map(opt => opt.value);
+      
+          questions.push({ question, options, answer });
+        });
+      
+        if (questions.length === 0){
+          alert("No new questions to save");
+          return;
+        }
+      
+        fetch('/test/save-questions/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({ questions })
+        })
+        .then(res => res.json())
+        .then(() => {
+          alert("Saved!");
+          location.reload();
+        });
+    }
+      
+    function deleteQuestionDB(id, btn){
+    fetch('/test/delete-question/', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(res => res.json())
+    .then(() => {
+        btn.closest(".question-card").remove(); // remove from UI
+    });
+    }
+      
+    function updateQuestions(){
+        const cards = document.querySelectorAll(".question-card");
+    
+        let questions = [];
+    
+        cards.forEach(card => {
+        const id = card.dataset.id;
+    
+        const question = card.querySelector(".question-input").value;
+        const answer = card.querySelector(".answer-input").value;
+    
+        const options = [...card.querySelectorAll(".option-input")]
+            .map(opt => opt.value);
+    
+        questions.push({ id, question, options, answer });
+        });
+    
+        fetch('/test/update-questions/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ questions })
+        })
+        .then(res => res.json())
+        .then(() => {
+        alert("Updated successfully!");
+        });
+    }
+    
+    function enableEdit(btn){
+        const card = btn.closest(".question-card");
+        
+        card.querySelectorAll("textarea, input").forEach(el => {
+            el.removeAttribute("readonly");
+        
+            el.classList.remove("border-0", "bg-transparent");
+            el.classList.add("border");
+            el.classList.remove("pointer-events-none");
+          });
+              
+        // enable fields
+        card.querySelector(".question-input").removeAttribute("readonly");
+        card.querySelectorAll(".option-input").forEach(i => i.removeAttribute("readonly"));
+        card.querySelector(".answer-input").removeAttribute("readonly");
+      
+        // 🔁 Change to SAVE icon
+        btn.innerHTML = `
+          <svg class="w-5 h-5 bg-green-100 text-green-600 rounded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 13l4 4L19 7"/>
+          </svg>
+        `;
+      
+        btn.onclick = function(){
+          saveEdit(btn, card);
+        };
+    }
+      
+    function saveEdit(btn, card){
+        const id = card.dataset.id;
+        
+        card.querySelectorAll("textarea, input").forEach(el => {
+            el.setAttribute("readonly", true);
+        
+            // 👉 ADD HERE
+            el.classList.remove("border");
+            el.classList.add("border-0", "bg-transparent");
+            el.classList.add("pointer-events-none");
+            
+          });
+                
+        const question = card.querySelector(".question-input").value;
+        const answer = card.querySelector(".answer-input").value;
+      
+        const options = [...card.querySelectorAll(".option-input")]
+          .map(opt => opt.value);
+      
+        fetch('/test/update-questions/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({
+            questions: [{ id, question, options, answer }]
+          })
+        })
+        .then(res => res.json())
+        .then(() => {
+      
+          // disable again
+          card.querySelector(".question-input").setAttribute("readonly", true);
+          card.querySelectorAll(".option-input").forEach(i => i.setAttribute("readonly", true));
+          card.querySelector(".answer-input").setAttribute("readonly", true);
+      
+          // 🔁 Change back to EDIT icon
+          btn.innerHTML = `
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+          `;
+      
+          btn.onclick = function(){
+            enableEdit(btn);
+          };
+        });
+    }
+    
+    function updateSingleQuestion(card){
+        const id = card.dataset.id;
+      
+        const question = card.querySelector(".question-input").value;
+        const answer = card.querySelector(".answer-input").value;
+      
+        const options = [...card.querySelectorAll(".option-input")]
+          .map(opt => opt.value);
+      
+        fetch('/test/update-questions/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({
+            questions: [{ id, question, options, answer }]
+          })
+        })
+        .then(res => res.json())
+        .then(() => {
+          alert("Updated!");
+      
+          // disable again
+          card.querySelector(".question-input").setAttribute("readonly", true);
+          card.querySelectorAll(".option-input").forEach(i => i.setAttribute("readonly", true));
+          card.querySelector(".answer-input").setAttribute("readonly", true);
+      
+        });
+    }
+      
+    function enableEditTemp(btn){
+    const card = btn.closest(".question-card");
+    
+    // enable fields
+    card.querySelector(".question-input").removeAttribute("readonly");
+    card.querySelectorAll(".option-input").forEach(i => i.removeAttribute("readonly"));
+    card.querySelector(".answer-input").removeAttribute("readonly");
+    
+    // change to SAVE icon
+    btn.innerHTML = `
+        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+    `;
+    
+    btn.onclick = function(){
+        saveEditTemp(btn, card);
+    };
+    }
+      
+    function saveEditTemp(btn, card){
+
+        // disable again (NO API CALL)
+        card.querySelector(".question-input").setAttribute("readonly", true);
+        card.querySelectorAll(".option-input").forEach(i => i.setAttribute("readonly", true));
+        card.querySelector(".answer-input").setAttribute("readonly", true);
+
+        // back to EDIT icon
+        btn.innerHTML = `
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+        `;
+
+        btn.onclick = function(){
+            enableEditTemp(btn);
+        };
+    }
 </script>
 
 {% endblock %}

@@ -6,4 +6,7 @@ urlpatterns = [
     path('add_question/', views.add_question, name='add_question'),
     path('manage_test/', views.manage_test, name='manage_test'),
     path('generate-questions/', views.GenerateQuestionsAPI.as_view(), name='generate-questions'),
+    path('save-questions/', views.SaveQuestionsAPI.as_view(), name='save-questions'),
+    path('delete-question/', views.DeleteQuestionAPI.as_view(), name='delete-question'),
+    path('update-questions/', views.UpdateQuestionsAPI.as_view(), name='update-questions'),
 ]

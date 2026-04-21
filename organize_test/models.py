@@ -63,3 +63,9 @@ class QuestionOption(models.Model):
     def __str__(self):
         return f'{self.option_text} ({'Correct' if self.is_correct else 'Wrong'})'
         
+#ai generated questions
+class QuestionModel(models.Model):
+    question = models.TextField()
+    options = models.JSONField(blank=True, null=True)  # for MCQ
+    answer = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

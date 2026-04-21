@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import newTest, Position, Question, QuestionOption
+from .models import newTest, Position, Question, QuestionOption, QuestionModel
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .utils import generate_questions
@@ -84,7 +84,11 @@ def add_question(request):
     return render(request, 'add_question.html')
     
 def manage_test(request):
-    return render(request, 'manage_test.html')
+    questions = QuestionModel.objects.all().order_by('-id')
+
+    return render(request, "manage_test.html", {
+        "questions": questions
+    })
     
 class GenerateQuestionsAPI(APIView):
     def post(self, request):
@@ -97,3 +101,40 @@ class GenerateQuestionsAPI(APIView):
         data = generate_questions(paragraph, q_type, count, difficulty, mcq_options)
         return Response({"questions": data})
         
+class SaveQuestionsAPI(APIView):
+    def post(self, request):
+        questions = request.data.get("questions", [])
+
+        saved = []
+
+        for q in questions:
+            obj = QuestionModel.objects.create(
+                question=q.get("question", "").strip(),
+                options=q.get("options", []),   # handles MCQ
+                answer=q.get("answer", "").strip()
+            )
+            saved.append(obj.id)
+
+        return Response({
+            "status": "success",
+            "saved_ids": saved
+        })
+        
+class DeleteQuestionAPI(APIView):
+    def post(self, request):
+        q_id = request.data.get("id")
+        QuestionModel.objects.filter(id=q_id).delete()
+        return Response({"status": "deleted"})
+        
+class UpdateQuestionsAPI(APIView):
+    def post(self, request):
+        questions = request.data.get("questions", [])
+
+        for q in questions:
+            obj = QuestionModel.objects.get(id=q["id"])
+            obj.question = q["question"]
+            obj.options = q.get("options", [])
+            obj.answer = q["answer"]
+            obj.save()
+
+        return Response({"status": "updated"})
