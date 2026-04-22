@@ -6,20 +6,23 @@
 <div class="bg-white rounded-2xl shadow-sm">
     <div class="flex flex-col gap-2 p-6 bg-blue-800 rounded-b rounded-2xl">
         <p class='text-white text-3xl font-semibold'>Add Question to Test</p>
-        <p class='text-stone-100'>Python Developer Assessment</p>
+        <p class='text-stone-100'>{{test.title}}</p>
     </div>
     <div class="flex justify-between py-4 px-4">
         <div class="flex flex-col justify-center gap-2">
             <p class='text-lg text-stone-700 font-semibold'>Test Summary</p>
             <div class='flex gap-4'>
                 <p>
-                    <span class='text-stone-500 font-semibold'>Duration: </span><span class='text-stone-500'>60 minutes</span>
+                    <span class='text-stone-500 font-semibold'>Duration: </span><span class='text-stone-500'>{{test.duration}} minutes</span>
                 </p>
                 <p>
-                    <span class='text-stone-500 font-semibold'>Difficulty: </span><span class='text-stone-500'>Medium</span>
+                    <span class='text-stone-500 font-semibold'>Difficulty: </span><span class='text-stone-500'>{{test.difficulty}}</span>
                 </p>
                 <p>
-                    <span class='text-stone-500 font-semibold'>Position: </span><span class='text-stone-500'>Python Developer</span>
+                    <span class='text-stone-500 font-semibold'>Position: </span><span class='text-stone-500'>{{test.position}}</span>
+                </p>
+                <p>
+                    <span class='text-stone-500 font-semibold'>Passing Score: </span><span class='text-stone-500'>{{test.passing_score}}%</span>
                 </p>
             </div>
         </div>
@@ -94,7 +97,9 @@
     Save Changes
     </button>
 {% else %}
-<p>No Questions Set</p>
+<div class="flex justify-center items-end h-[3vh] w-full">
+  <p class='text-stone-400'>No Questions Set</p>
+</div>
 {% endif %}
 
 <div id="questionsContainer" class="mt-6 space-y-4"></div>
@@ -196,6 +201,7 @@
 </div>
 
 <script>
+    const TEST_ID = "{{ test.id }}";
     const overlay = document.getElementById('create-question-options');
 
     overlay.addEventListener('click', function(e) {
@@ -403,7 +409,10 @@
             'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken()
           },
-          body: JSON.stringify({ questions })
+          body: JSON.stringify({ 
+            test_id: TEST_ID,
+            questions: questions
+           })
         })
         .then(res => res.json())
         .then(() => {

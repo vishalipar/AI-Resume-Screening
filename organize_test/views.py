@@ -19,8 +19,16 @@ def organize_test(request):
         
         try:
             position_obj = Position.objects.get(id=position_id)
-            newTest.objects.create(title=title, position=position_obj, difficulty=level,duration=duration,passing_score=passing_score,description=test_description)
-            return redirect('manage_test')
+            test = newTest.objects.create(
+                title=title,
+                position=position_obj,
+                difficulty=level,
+                duration=duration,
+                passing_score=passing_score,
+                description=test_description
+            )
+
+            return redirect('manage_test',test_id=test.id)
             
         except Position.DoesNotExist:
             pass
@@ -83,10 +91,12 @@ def add_question(request):
         
     return render(request, 'add_question.html')
     
-def manage_test(request):
-    questions = QuestionModel.objects.all().order_by('-id')
+def manage_test(request, test_id):
+    test = newTest.objects.get(id=test_id)
+    questions = QuestionModel.objects.filter(test=test)
 
     return render(request, "manage_test.html", {
+        "test": test,
         "questions": questions
     })
     
@@ -104,11 +114,21 @@ class GenerateQuestionsAPI(APIView):
 class SaveQuestionsAPI(APIView):
     def post(self, request):
         questions = request.data.get("questions", [])
+        test_id = request.data.get("test_id")
+        
+        if not test_id:
+            return Response({"error": "test_id is required"}, status=400)
+
+        try:
+            test = newTest.objects.get(id=test_id)
+        except newTest.DoesNotExist:
+            return Response({"error": "Invalid test_id"}, status=404)
 
         saved = []
 
         for q in questions:
             obj = QuestionModel.objects.create(
+                test=test,
                 question=q.get("question", "").strip(),
                 options=q.get("options", []),   # handles MCQ
                 answer=q.get("answer", "").strip()

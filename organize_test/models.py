@@ -25,8 +25,10 @@ class newTest(models.Model):
     
     def __str__(self):
         return self.title
-        
+    
+# manually create questions    
 class Question(models.Model):
+    test = models.ForeignKey(newTest, on_delete=models.CASCADE, null=True, blank=True)
     QUESTION_TYPE_CHOICES = [
         ('mcq', 'Multiple Choice'),
         ('coding', 'Coding'),
@@ -61,10 +63,11 @@ class QuestionOption(models.Model):
     is_correct = models.BooleanField(default=False)
     
     def __str__(self):
-        return f'{self.option_text} ({'Correct' if self.is_correct else 'Wrong'})'
+        return f"{self.option_text} ({'Correct' if self.is_correct else 'Wrong'})"
         
 #ai generated questions
 class QuestionModel(models.Model):
+    test = models.ForeignKey(newTest, on_delete=models.CASCADE, null=True, blank=True)
     question = models.TextField()
     options = models.JSONField(blank=True, null=True)  # for MCQ
     answer = models.TextField()
