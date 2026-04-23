@@ -3,6 +3,8 @@ from .models import newTest, Position, Question, QuestionOption, QuestionModel
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .utils import generate_questions
+from django.http import JsonResponse
+import json
 # Create your views here.
 
 def organize_test(request):
@@ -95,10 +97,14 @@ def manage_test(request, test_id):
     test = newTest.objects.get(id=test_id)
     questions = QuestionModel.objects.filter(test=test)
 
-    return render(request, "manage_test.html", {
-        "test": test,
-        "questions": questions
-    })
+    selected_ids = questions.filter(is_selected=True).values_list('id', flat=True)
+
+    context = {
+        'test': test,
+        'questions': questions,
+        'selected_ids': list(selected_ids),
+    }
+    return render(request, 'manage_test.html', context)
     
 class GenerateQuestionsAPI(APIView):
     def post(self, request):
@@ -155,6 +161,22 @@ class UpdateQuestionsAPI(APIView):
             obj.question = q["question"]
             obj.options = q.get("options", [])
             obj.answer = q["answer"]
+            obj.marks = q.get('marks', obj.marks)
             obj.save()
 
         return Response({"status": "updated"})
+
+def toggle_question(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        questions = data.get("questions", [])
+        test_id = data.get("test_id")
+
+        for q in questions:
+            obj = QuestionModel.objects.get(id=q["question_id"], test_id=test_id)
+            obj.is_selected = q["selected"]
+            obj.marks = q["marks"]
+            obj.save()
+
+        return JsonResponse({"status": "success"})

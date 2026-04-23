@@ -28,7 +28,6 @@ class newTest(models.Model):
     
 # manually create questions    
 class Question(models.Model):
-    test = models.ForeignKey(newTest, on_delete=models.CASCADE, null=True, blank=True)
     QUESTION_TYPE_CHOICES = [
         ('mcq', 'Multiple Choice'),
         ('coding', 'Coding'),
@@ -71,4 +70,6 @@ class QuestionModel(models.Model):
     question = models.TextField()
     options = models.JSONField(blank=True, null=True)  # for MCQ
     answer = models.TextField()
+    is_selected = models.BooleanField(default=False)
+    marks = models.IntegerField(default=2)
     created_at = models.DateTimeField(auto_now_add=True)

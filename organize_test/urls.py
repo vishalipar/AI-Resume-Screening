@@ -9,4 +9,5 @@ urlpatterns = [
     path('save-questions/', views.SaveQuestionsAPI.as_view(), name='save-questions'),
     path('delete-question/', views.DeleteQuestionAPI.as_view(), name='delete-question'),
     path('update-questions/', views.UpdateQuestionsAPI.as_view(), name='update-questions'),
+    path('toggle-question/', views.toggle_question, name='toggle_question'),
 ]

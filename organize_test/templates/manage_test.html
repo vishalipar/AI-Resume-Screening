@@ -28,21 +28,33 @@
         </div>
         <div class="flex flex-col justify-center gap-2">
             <p class='flex flex-col items-end'>
-                <span class='text-4xl text-blue-800 font-semibold'>0</span>
+                <span id="questionCount" class='text-4xl text-blue-800 font-semibold'>0</span>
                 <span class='text-stone-500'>Questions Selected</span>
             </p>
-            <p class='text-stone-600 text-xl text-end font-semibold'>0 Marks</p>
+            <p id="totalMarks" class='text-stone-600 text-xl text-end font-semibold'>0 Marks</p>
         </div>
     </div>
 </div>
 
 <button onclick="openOptions()" class='flex items-center gap-2 w-fit mx-auto my-9 px-6 py-3 text-stone-100 font-semibold bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg'>
-    Add Questions to Test
+    Generate Questions for Test
 </button>
 {% if questions %}
     {% for q in questions %}
     <div class="p-4 mb-3 border rounded-lg bg-white shadow-sm relative question-card" data-id="{{ q.id }}">
-        <div class="absolute top-6 right-5 flex gap-2">
+        <!-- Select Question -->
+        <input type="checkbox" class="absolute -left-7 select-question scale-125"
+        onchange="toggleQuestion(this, {{ q.id }})"
+       {% if q.id in selected_ids %}checked{% endif %}>
+        
+        <div class="absolute top-6 right-1 flex items-center">
+          
+          <span class='text-stone-500'>Marks</span>
+            <input type="number" value="{{ q.marks|default:2 }}"
+                  class="marks-input w-16 text-sm border rounded px-2 py-1 marks-input border-0 bg-transparent pointer-events-none" oninput="updateSummary()" onchange="updateMarks(this, {{ q.id }})" readonly
+                  min="1">
+        </div>
+        <div class="absolute top-20 right-5 flex gap-2">
             <button onclick="enableEdit(this)" class="text-blue-500 hover:text-blue-700 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -95,6 +107,11 @@
     <button onclick="updateQuestions()" 
     class="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-6 py-3 rounded mt-4">
     Save Changes
+    </button>
+    <button id="saveSelectionBtn"
+        onclick="saveSelections()"
+        class="hidden bg-green-600 text-white ml-4 px-6 py-3 rounded mt-4">
+      Add Selected Questions
     </button>
 {% else %}
 <div class="flex justify-center items-end h-[3vh] w-full">
@@ -477,6 +494,11 @@
             el.classList.add("border");
             el.classList.remove("pointer-events-none");
           });
+          
+        card.querySelectorAll(".marks-input").forEach(el => {
+            el.classList.remove("border-0", "bg-transparent", "pointer-events-none");
+            el.classList.add("border");
+        });
               
         // enable fields
         card.querySelector(".question-input").removeAttribute("readonly");
@@ -498,16 +520,21 @@
       
     function saveEdit(btn, card){
         const id = card.dataset.id;
+        const marks = card.querySelector(".marks-input").value;
         
         card.querySelectorAll("textarea, input").forEach(el => {
             el.setAttribute("readonly", true);
         
-            // 👉 ADD HERE
             el.classList.remove("border");
             el.classList.add("border-0", "bg-transparent");
             el.classList.add("pointer-events-none");
             
           });
+          
+        card.querySelectorAll(".marks-input").forEach(el => {
+            el.classList.remove("border");
+            el.classList.add("border-0", "bg-transparent", "pointer-events-none");
+        });
                 
         const question = card.querySelector(".question-input").value;
         const answer = card.querySelector(".answer-input").value;
@@ -522,7 +549,7 @@
             'X-CSRFToken': getCSRFToken()
           },
           body: JSON.stringify({
-            questions: [{ id, question, options, answer }]
+            questions: [{ id, question, options, answer,marks }]
           })
         })
         .then(res => res.json())
@@ -617,6 +644,74 @@
             enableEditTemp(btn);
         };
     }
+    
+    function updateSummary(){
+      const cards = document.querySelectorAll(".question-card");
+  
+      let count = 0;
+      let totalMarks = 0;
+  
+      cards.forEach(card => {
+          const checkbox = card.querySelector(".select-question");
+          const marks = card.querySelector(".marks-input");
+  
+          if(checkbox.checked){
+              count++;
+              totalMarks += parseInt(marks.value || 0);
+          }
+      });
+  
+      document.getElementById("questionCount").innerText = count;
+      document.getElementById("totalMarks").innerText = totalMarks + " Marks";
+    }
+  
+  let isDirty = false;
+  
+  function toggleQuestion(el){
+    isDirty = true;
+
+    document.getElementById("saveSelectionBtn").classList.remove("hidden");
+
+    updateSummary(); // update UI only
+  }
+  window.onload = updateSummary;
+  
+  function saveSelections(){
+    const cards = document.querySelectorAll(".question-card");
+
+    let data = [];
+
+    cards.forEach(card => {
+        const qid = card.dataset.id;
+        const selected = card.querySelector(".select-question").checked;
+        const marks = card.querySelector(".marks-input").value;
+
+        data.push({
+            question_id: qid,
+            selected: selected,
+            marks: marks
+        });
+    });
+
+    fetch('/test/toggle-question/', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()
+        },
+        body: JSON.stringify({
+            test_id: TEST_ID,
+            questions: data
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        isDirty = false;
+        document.getElementById("saveSelectionBtn").classList.add("hidden");
+        alert("Saved!");
+    });
+  }
+  
 </script>
 
 {% endblock %}
