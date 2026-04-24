@@ -180,3 +180,9 @@ def toggle_question(request):
             obj.save()
 
         return JsonResponse({"status": "success"})
+        
+def delete_test(request, id):
+    if request.method == "POST":
+        newTest.objects.filter(id=id).delete()
+        return JsonResponse({'status': 'ok'})
+        

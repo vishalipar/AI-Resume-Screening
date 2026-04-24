@@ -10,4 +10,5 @@ urlpatterns = [
     path('delete-question/', views.DeleteQuestionAPI.as_view(), name='delete-question'),
     path('update-questions/', views.UpdateQuestionsAPI.as_view(), name='update-questions'),
     path('toggle-question/', views.toggle_question, name='toggle_question'),
+    path('delete-test/<int:id>/', views.delete_test, name='delete_test'),
 ]
