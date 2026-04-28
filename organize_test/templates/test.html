@@ -151,53 +151,42 @@
                 <div class="flex gap-4">
                     <div class="flex flex-1 flex-col gap-2">
                         <p class='text-stone-700'>Select Test</p>
-                        <select name="" id="" class='py-3 px-3 border border-stone-200 rounded-lg'>
-                            <option value="">Python Developer Assessment</option>
+                        <select name="" id="testSelect" class='py-3 px-3 border border-stone-200 rounded-lg'>
+                            {% for test in newtest %}
+                            <option value="{{test.title}}">{{ test.title }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="flex flex-1 flex-col gap-2">
                         <p class='text-stone-700'>Test Deadline</p>
-                        <input type="datetime-local" name="datetime" class="px-4 py-2 border border-stone-200 rounded-lg">
+                        <input type="datetime-local" id="testDateTime" name="datetime" class="px-4 py-2 border border-stone-200 rounded-lg">
                     </div>
                 </div>
                 <div class="mt-9">
                     <p class='text-stone-600 text-lg font-semibold'>Shortlisted Candidates</p>
                     <div class="flex flex-col gap-4 mx-4 mt-3">
+                        {% if shortlisted %}
+                        {% for s in shortlisted %}
                         <div class="flex items-center justify-between px-4 py-3 bg-blue-50 rounded-lg">
                             <div class="">
-                                <p class='text-stone-700 font-semibold'>John Doe</p>
-                                <p class='text-stone-400 text-sm'>john09@example.com</p>
+                                <p class='text-stone-700 font-semibold'>{{ s.name }}</p>
+                                <p class='text-stone-400 text-sm'>{{ s.email }}</p>
                             </div>
                             <div class="flex items-center">
-                                <input type="checkbox" id="candidate1" style="transform: scale(1.3);">
+                                <input type="checkbox" class="candidate-checkbox" value="{{ s.email }}" data-name="{{ s.name }}" style="transform: scale(1.3);">
                             </div>
                         </div>
-                        <div class="flex items-center justify-between px-4 py-3 bg-blue-50 rounded-lg">
-                            <div class="">
-                                <p class='text-stone-700 font-semibold'>Jane Smith</p>
-                                <p class='text-stone-400 text-sm'>jane4409@example.com</p>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="candidate1" style="transform: scale(1.3);">
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between px-4 py-3 bg-blue-50 rounded-lg">
-                            <div class="">
-                                <p class='text-stone-700 font-semibold'>Mike Johnson</p>
-                                <p class='text-stone-400 text-sm'>mike@example.com</p>
-                            </div>
-                            <div class="flex items-center">
-                                <input type="checkbox" id="candidate1" style="transform: scale(1.3);">
-                            </div>
-                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class='text-stone-400 text-center my-9'>No candidate shortlisted yet.</p>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="flex gap-2 mt-6">
-                    <button type="button" class='px-5 py-2 text-stone-100 bg-blue-800 rounded-lg'>Assign Test & Send Email</button>
-                    <button type="button" class='px-5 py-2 text-stone-700 bg-stone-200 rounded-lg'>Select All</button>
+                    <button type="button" onclick="openEmailPopup()" class='px-5 py-2 text-stone-100 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg'>Assign Test & Send Email</button>
+                    <button type="button" onclick="selectAllCandidates()" class='px-5 py-2 text-stone-700 bg-stone-200 rounded-lg'>Select All</button>
                 </div>
             </div>
-            
         </div>
     </div>
     <div id='results' class="tab-content hidden">
@@ -356,6 +345,21 @@
     </div>
 </div>
 
+<div id="emailModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white w-[40vw] p-6 rounded-xl">
+      <h2 class="text-xl font-bold mb-4">Send Test Email</h2>
+      <input type="text" id="emailSubject"
+        class="w-full border p-2 mb-3 rounded"
+        placeholder="Subject">
+      <textarea id="emailMessage"
+        class="w-full border p-2 rounded h-40"
+        placeholder="Message"></textarea>
+      <div class="flex justify-end gap-3 mt-4">
+        <button onclick="closeEmailPopup()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+        <button id="sendBtn" onclick="sendEmail()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded"><span id="btnText">Send</span>
+      </div>
+    </div>
+</div>
 
 <script>
     function switchTab(tabName){
@@ -396,6 +400,102 @@
             location.reload();
         });
     }
+    
+    function openEmailPopup(){
+        const checkboxes = document.querySelectorAll(".candidate-checkbox:checked");
+    
+        if(checkboxes.length === 0){
+            alert("Select at least one candidate");
+            return;
+        }
+    
+        const testName = document.getElementById("testSelect").value;
+        const dateTime = document.getElementById("testDateTime").value;
+    
+        if(!testName){
+            alert("Please select test");
+            return;
+        }
+    
+        if(!dateTime){
+            alert("Please select test date & time");
+            return;
+        }
+    
+        // collect emails
+        let emails = [];
+        checkboxes.forEach(cb => emails.push(cb.value));
+        window.selectedEmails = emails;
+    
+        // ✅ PREPOPULATE
+        document.getElementById("emailSubject").value =
+            `Test Invitation: ${testName}`;
+    
+        document.getElementById("emailMessage").value =
+    `Dear Candidate,
+    
+    You have been assigned a test.
+    
+    Test: ${testName}
+    Scheduled On: ${dateTime}
+    
+    Please complete it before deadline.
+    
+    Best Regards,
+    Team`;
+    
+        document.getElementById("emailModal").classList.remove("hidden");
+    }
+    
+    function closeEmailPopup(){
+        document.getElementById("emailModal").classList.add("hidden");
+    }
+    
+    function selectAll(){
+        const checkboxes = document.querySelectorAll(".candidate-checkbox");
+        
+        checkboxes.forEach(cb => {
+            cb.checked = true;
+        });
+    }
+    
+    function sendEmail(){
+        const btn = document.getElementById("sendBtn");
+        const text = document.getElementById("btnText");
+    
+        text.innerText = "Sending...";
+        btn.disabled = true;
+    
+        fetch('/test/send-emails/', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: JSON.stringify({
+                emails: window.selectedEmails,
+                subject: document.getElementById("emailSubject").value,
+                message: document.getElementById("emailMessage").value
+            })
+        })
+        .then(res => res.json())
+        .then(() => {
+            text.innerText = "Sent ✓";
+    
+            setTimeout(() => {
+                closeEmailPopup();
+                text.innerText = "Send"; // reset for next time
+                btn.disabled = false;
+            }, 1500);
+        });
+    }
+    
+    function selectAllCandidates(){
+        document.querySelectorAll(".candidate-checkbox").forEach(cb => {
+            cb.checked = true;
+        });
+    }
+    
 </script>
 
 {% endblock %}

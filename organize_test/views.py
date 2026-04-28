@@ -4,12 +4,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .utils import generate_questions
 from django.http import JsonResponse
+from django.core.mail import send_mail
 import json
+from resume_screening.models import UserInfo
+from resume_project.settings import EMAIL_HOST_USER
 # Create your views here.
 
 def organize_test(request):
     newtest = newTest.objects.all()
     positions = Position.objects.all()
+    shortlisted = UserInfo.objects.filter(status=True)
     
     if request.method == 'POST':
         title  = request.POST['title']
@@ -38,6 +42,7 @@ def organize_test(request):
     context = {
         'newtest':newtest,
         'positions': positions,
+        'shortlisted': shortlisted,
     }
     return render(request, 'test.html', context)
     
@@ -184,5 +189,22 @@ def toggle_question(request):
 def delete_test(request, id):
     if request.method == "POST":
         newTest.objects.filter(id=id).delete()
+        return JsonResponse({'status': 'ok'})
+        
+def send_emails(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        emails = data.get('emails', [])
+        subject = data.get('subject')
+        message = data.get('message')
+
+        send_mail(
+            subject,
+            message,
+            EMAIL_HOST_USER,
+            emails
+        )
+
         return JsonResponse({'status': 'ok'})
         
