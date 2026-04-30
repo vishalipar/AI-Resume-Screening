@@ -12,4 +12,5 @@ urlpatterns = [
     path('toggle-question/', views.toggle_question, name='toggle_question'),
     path('delete-test/<int:id>/', views.delete_test, name='delete_test'),
     path('send-emails/', views.send_emails, name='send_emails'),
+    path('send-single-email/', views.send_single_email, name='send_single_email'),
 ]

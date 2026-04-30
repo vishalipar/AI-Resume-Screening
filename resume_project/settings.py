@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'resume_screening',
     'organize_test',
+    'assessment',
     
     'rest_framework',
     'chat_bot',

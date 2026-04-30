@@ -151,9 +151,9 @@
                 <div class="flex gap-4">
                     <div class="flex flex-1 flex-col gap-2">
                         <p class='text-stone-700'>Select Test</p>
-                        <select name="" id="testSelect" class='py-3 px-3 border border-stone-200 rounded-lg'>
+                        <select id="testSelect" class='py-3 px-3 border border-stone-200 rounded-lg'>
                             {% for test in newtest %}
-                            <option value="{{test.title}}">{{ test.title }}</option>
+                            <option value="{{test.id}}">{{ test.title }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -409,10 +409,18 @@
             return;
         }
     
-        const testName = document.getElementById("testSelect").value;
+        const testSelect = document.getElementById("testSelect");
+
+        if (!testSelect) {
+            console.log("testSelect not found");
+            return;
+        }
+
+        const testName = testSelect.options[testSelect.selectedIndex].text;
+
         const dateTime = document.getElementById("testDateTime").value;
     
-        if(!testName){
+        if(!testSelect){
             alert("Please select test");
             return;
         }
@@ -440,6 +448,8 @@
     Scheduled On: ${dateTime}
     
     Please complete it before deadline.
+    
+    Test Link : [Will add automatically]
     
     Best Regards,
     Team`;
@@ -475,7 +485,9 @@
             body: JSON.stringify({
                 emails: window.selectedEmails,
                 subject: document.getElementById("emailSubject").value,
-                message: document.getElementById("emailMessage").value
+                message: document.getElementById("emailMessage").value,
+                test_id: document.getElementById("testSelect").value,
+                datetime: document.getElementById("testDateTime").value
             })
         })
         .then(res => res.json())
@@ -484,7 +496,7 @@
     
             setTimeout(() => {
                 closeEmailPopup();
-                text.innerText = "Send"; // reset for next time
+                text.innerText = "Send";
                 btn.disabled = false;
             }, 1500);
         });

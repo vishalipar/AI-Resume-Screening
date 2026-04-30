@@ -25,6 +25,7 @@ from resume_parser.views import JobRoleView, job_roles_view, JobRolesAPIView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include('resume_screening.urls')),
+    path('assessment-test/', include('assessment.urls')),
     path('api/chat/', ChatView.as_view(), name='chat'),
     path('api/jobs/', JobRoleView.as_view(), name='jobs'),
     

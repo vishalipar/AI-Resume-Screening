@@ -7,10 +7,14 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 import json
 from resume_screening.models import UserInfo
+from assessment.models import TestAttempt
 from resume_project.settings import EMAIL_HOST_USER
 # Create your views here.
 
 def organize_test(request):
+    if request.session.get('is_candidate'):
+        return HttpResponse("Unauthorized access")
+
     newtest = newTest.objects.all()
     positions = Position.objects.all()
     shortlisted = UserInfo.objects.filter(status=True)
@@ -192,19 +196,90 @@ def delete_test(request, id):
         return JsonResponse({'status': 'ok'})
         
 def send_emails(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
+    data = json.loads(request.body)
 
-        emails = data.get('emails', [])
-        subject = data.get('subject')
-        message = data.get('message')
+    emails = data.get('emails', [])
+    subject = data.get('subject')
+    message = data.get('message')
+    test_id = data.get('test_id')
+    datetime = data.get('datetime')
+
+    test = newTest.objects.get(id=test_id)
+
+    for email in emails:
+        attempt = TestAttempt.objects.create(test=test, email=email)
+
+        link = f"http://127.0.0.1:8000/assessment-test/{attempt.token}/"
+
+        final_message = message + f"\n\nTest Link: {link}"
+        final_message = message.replace(
+            "[Will add automatically]",
+            link
+        )
 
         send_mail(
             subject,
-            message,
+            final_message,
             EMAIL_HOST_USER,
-            emails
+            [email],
+            fail_silently=False
         )
 
-        return JsonResponse({'status': 'ok'})
+    return JsonResponse({"status": "success"})
         
+def send_single_email(request):
+    data = json.loads(request.body)
+
+    email = data.get('email')
+    subject = data.get('subject')
+    message = data.get('message')
+
+    if not email or not subject or not message:
+        return JsonResponse({'status': 'error', 'message': 'Missing data'})
+
+    send_mail(
+        subject,
+        message,
+        EMAIL_HOST_USER,
+        [email],
+        fail_silently=False,
+    )
+
+    return JsonResponse({'status': 'success'})
+        
+def create_attempts(request):
+    data = json.loads(request.body)
+
+    test_id = data.get('test_id')
+    emails = data.get('emails')
+
+    test = newTest.objects.get(id=test_id)
+
+    attempts = []
+
+    for email in emails:
+        attempt = TestAttempt.objects.create(test=test, email=email)
+
+        link = f"http://127.0.0.1:8000/assessment-test/{attempt.token}/"
+
+        attempts.append({
+            "email": email,
+            "link": link
+        })
+
+    return JsonResponse({"attempts": attempts})
+     
+def submit_test(request):
+    attempt_id = request.session.get('attempt_id')
+
+    if attempt_id:
+        attempt = TestAttempt.objects.get(id=attempt_id)
+        attempt.status = 'submitted'
+        attempt.save()
+
+    # ✅ clear candidate session
+    request.session.pop('is_candidate', None)
+    request.session.pop('attempt_id', None)
+
+    return HttpResponse("Test submitted")
+    
