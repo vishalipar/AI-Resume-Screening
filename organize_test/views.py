@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .utils import generate_questions
 from django.http import JsonResponse
+from django.db.models import Sum
 from django.core.mail import send_mail
 import json
 from resume_screening.models import UserInfo
@@ -18,6 +19,11 @@ def organize_test(request):
     newtest = newTest.objects.all()
     positions = Position.objects.all()
     shortlisted = UserInfo.objects.filter(status=True)
+    attempts = TestAttempt.objects.select_related('test').order_by('-start_time')
+    
+    for a in attempts:
+        total = QuestionModel.objects.filter(test=a.test, is_selected=True).aggregate(Sum('marks'))['marks__sum'] or 1
+        a.percentage = (a.score / total) * 100
     
     if request.method == 'POST':
         title  = request.POST['title']
@@ -47,6 +53,7 @@ def organize_test(request):
         'newtest':newtest,
         'positions': positions,
         'shortlisted': shortlisted,
+        'attempts': attempts
     }
     return render(request, 'test.html', context)
     
