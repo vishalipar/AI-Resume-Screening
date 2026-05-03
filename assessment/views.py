@@ -56,11 +56,6 @@ def take_test(request, token):
         total_time = attempt.test.duration * 60
         remaining_seconds = max(0, int(total_time - elapsed))
 
-        if remaining_seconds <= 0:
-            attempt.status = "submitted"
-            attempt.save()
-            return HttpResponse("Time over. Test auto-submitted.")
-
     if request.method == "POST":
         total_score = 0
         for q in questions:
@@ -79,7 +74,10 @@ def take_test(request, token):
         attempt.status = "submitted"
         attempt.save()
 
-        return HttpResponse(f"Test submitted successfully")
+        if request.POST.get("auto_submit") == "true":
+            return HttpResponse(f"Time over. Auto-submitted.")
+        else:
+            return HttpResponse(f"Test submitted successfully.")
 
     total_marks = sum(q.marks for q in questions)
 
