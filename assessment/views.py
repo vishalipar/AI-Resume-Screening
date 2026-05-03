@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404,HttpResponse
 from .models import TestAttempt, Answer
 from organize_test.models import QuestionModel
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 # Create your views here.
 
 def assessment_test(request, token):
@@ -27,8 +28,10 @@ def start_test(request, token):
     if attempt.status == "started":
         return redirect('take_test', token=token)
 
-    attempt.status = "started"
-    attempt.save()
+    if not attempt.start_time:
+        attempt.start_time = timezone.now()
+        attempt.status = "started"
+        attempt.save()
 
     request.session['attempt_id'] = attempt.id
 
@@ -45,6 +48,18 @@ def take_test(request, token):
         test=attempt.test,
         is_selected=True
     )
+    
+    remaining_seconds = 0
+
+    if attempt.start_time:
+        elapsed = (timezone.now() - attempt.start_time).total_seconds()
+        total_time = attempt.test.duration * 60
+        remaining_seconds = max(0, int(total_time - elapsed))
+
+        if remaining_seconds <= 0:
+            attempt.status = "submitted"
+            attempt.save()
+            return HttpResponse("Time over. Test auto-submitted.")
 
     if request.method == "POST":
         total_score = 0
@@ -72,6 +87,7 @@ def take_test(request, token):
         "attempt": attempt,
         "test": attempt.test,
         "questions": questions,
-        "total_marks": total_marks
+        "total_marks": total_marks,
+        "remaining_seconds": remaining_seconds
     })
     

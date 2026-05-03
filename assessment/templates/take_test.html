@@ -3,28 +3,6 @@
 <head>
     <title>{{ test.title }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <script>
-        let timeLeft = {{ test.duration }} * 60;
-        function startTimer(){
-            const timer = document.getElementById("timer");
-
-            const interval = setInterval(() => {
-                let m = Math.floor(timeLeft / 60);
-                let s = timeLeft % 60;
-
-                timer.innerText = m + ":" + (s < 10 ? "0"+s : s);
-
-                if(timeLeft <= 0){
-                    clearInterval(interval);
-                    document.getElementById("testForm").submit();
-                }
-                timeLeft--;
-            }, 1000);
-        }
-
-        window.onload = startTimer;
-    </script>
 </head>
 
 <body class="bg-gray-100">
@@ -81,7 +59,7 @@
 
         <!-- Submit -->
         <div class="text-center mt-6">
-            <button type="submit"
+            <button id="submitBtn" type="submit"
                 class="px-6 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800">
                 Submit Test
             </button>
@@ -90,4 +68,53 @@
 </div>
 
 </body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    
+        let timeLeft = {{ remaining_seconds|default:0 }};
+        const timerDisplay = document.getElementById("timer");
+        const form = document.getElementById("testForm");
+        const submitBtn = document.getElementById("submitBtn");
+    
+        let interval;
+        let isSubmitting = false;
+    
+        function startTimer() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            timerDisplay.innerText = m + ":" + (s < 10 ? "0"+s : s);
+    
+            interval = setInterval(() => {
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+    
+                timerDisplay.innerText = m + ":" + (s < 10 ? "0"+s : s);
+    
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    isSubmitting = true;   // ✅ prevent alert
+                    form.submit();
+                }
+    
+                timeLeft--;
+            }, 1000);
+        }
+    
+        form.addEventListener("submit", function(){
+            clearInterval(interval);
+            submitBtn.disabled = true;
+            isSubmitting = true;   // ✅ prevent alert
+        });
+    
+        // ✅ only show warning if NOT submitting
+        window.onbeforeunload = function () {
+            if (!isSubmitting) {
+                return "Changes you made may not be saved";
+            }
+        };
+    
+        startTimer();
+    });
+    </script>
 </html>

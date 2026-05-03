@@ -2,6 +2,7 @@ from django.db import models
 from organize_test.models import newTest
 from organize_test.models import QuestionModel
 import uuid
+from django.utils import timezone
 # Create your models here.
 
 class TestAttempt(models.Model):
@@ -10,6 +11,7 @@ class TestAttempt(models.Model):
     token = models.UUIDField(default=uuid.uuid4, unique=True)
     score = models.IntegerField(default=0)
     status = models.CharField(default='pending', max_length=20)
+    start_time = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return self.email
