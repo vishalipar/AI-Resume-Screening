@@ -116,6 +116,18 @@
                 return "Changes you made may not be saved";
             }
         };
+        
+        let tabSwitchCount = 0;
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) {
+                tabSwitchCount++;
+                alert("Warning: Tab switching detected!");
+                if (tabSwitchCount >= 3) {
+                    alert("Test auto-submitted due to multiple tab switches.");
+                    document.querySelector("form").submit();
+                }
+            }
+        });
     
         startTimer();
     });
