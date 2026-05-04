@@ -244,7 +244,7 @@
                                 <p>{% if a.status == 'started' or a.status == 'pending' %}--{% else %}{{ a.start_time|date:"M d, Y" }}{% endif %}</p>
                             </td>
                             <td>
-                                <button type="button" class='px-3 py-2 text-stone-600 bg-stone-200 rounded-lg'>View Details</button>
+                                <button onclick="openResultModal({{ a.id }})" type="button" class='px-3 py-2 text-stone-600 bg-stone-200 rounded-lg'>View Details</button>
                             </td>
                         </tr>
                         {% empty %}
@@ -274,6 +274,17 @@
         <button onclick="closeEmailPopup()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
         <button id="sendBtn" onclick="sendEmail()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded"><span id="btnText">Send</span>
       </div>
+    </div>
+</div>
+
+<div id="resultModal" class="fixed inset-0 bg-black/50 bg-opacity-50 hidden flex justify-center items-center z-50">
+    <div id="modalBox" class="bg-white w-[600px] max-h-[80vh] overflow-y-auto rounded-xl p-6 relative">
+        <button onclick="closeResultModal()"
+            class="absolute top-2 right-4 text-xl">X</button>
+        <h2 class="text-xl font-bold mb-4">Test Result</h2>
+        <div id="resultContent">
+            <!-- dynamic content -->
+        </div>
     </div>
 </div>
 
@@ -423,6 +434,53 @@
             cb.checked = true;
         });
     }
+    
+    function openResultModal(attemptId){
+        fetch(`/test/result/${attemptId}/`)
+        .then(res => res.json())
+        .then(data => {
+    
+            let html = `
+                <p class='text-stone-500'><b class='text-stone-800'>Email:</b> ${data.email}</p>
+                <p><b>Score:</b> ${data.score} / ${data.total_marks}</p>
+                <hr class="my-3">
+            `;
+    
+            data.answers.forEach(a => {
+                html += `
+                    <div class="mb-3">
+                        <div class='flex justify-between'>
+                            <p class='text-stone-700'><b>Q:</b> ${a.question}</p>
+                            <span class="text-sm text-green-600 font-semibold">
+                                ${a.marks} Marks
+                            </span>
+                        </div>
+                        <p><b>Your Answer:</b> ${a.selected}</p>
+                        <p><b>Correct:</b> ${a.correct}</p>
+                        <p style="color:${a.is_correct ? 'green' : 'red'}">
+                            ${a.is_correct ? '✔ Correct' : '❌ Wrong'}
+                        </p>
+                    </div>
+                `;
+            });
+    
+            document.getElementById("resultContent").innerHTML = html;
+            document.getElementById("resultModal").classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+        });
+    }
+    
+    function closeResultModal(){
+        document.getElementById("resultModal").classList.add("hidden");
+        document.body.style.overflow = "auto";
+    }
+    document.getElementById("resultModal").addEventListener("click", function(e){
+        const modalBox = document.getElementById("modalBox");
+    
+        if(!modalBox.contains(e.target)){
+            closeResultModal();
+        }
+    });
     
 </script>
 

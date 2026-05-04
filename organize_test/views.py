@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import newTest, Position, Question, QuestionOption, QuestionModel
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,7 +8,7 @@ from django.db.models import Sum
 from django.core.mail import send_mail
 import json
 from resume_screening.models import UserInfo
-from assessment.models import TestAttempt
+from assessment.models import TestAttempt, Answer
 from resume_project.settings import EMAIL_HOST_USER
 # Create your views here.
 
@@ -289,4 +289,26 @@ def submit_test(request):
     request.session.pop('attempt_id', None)
 
     return HttpResponse("Test submitted")
+    
+def result_api(request, attempt_id):
+    attempt = get_object_or_404(TestAttempt, id=attempt_id)
+    answers = Answer.objects.filter(attempt=attempt).select_related('question')
+
+    data = {
+        "email": attempt.email,
+        "score": attempt.score,
+        "total_marks": sum(a.question.marks for a in answers),
+        "answers": []
+    }
+
+    for a in answers:
+        data["answers"].append({
+            "question": a.question.question,
+            "selected": a.selected_answer,
+            "correct": a.question.answer,
+            "marks": a.question.marks,
+            "is_correct": a.selected_answer == a.question.answer
+        })
+
+    return JsonResponse(data)
     
