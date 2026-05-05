@@ -10,6 +10,9 @@ import json
 from resume_screening.models import UserInfo
 from assessment.models import TestAttempt, Answer
 from resume_project.settings import EMAIL_HOST_USER
+from django.utils.dateparse import parse_datetime
+from django.utils import timezone
+
 # Create your views here.
 
 def organize_test(request):
@@ -208,17 +211,22 @@ def send_emails(request):
     emails = data.get('emails', [])
     subject = data.get('subject')
     message = data.get('message')
-    test_id = data.get('test_id')
-    datetime = data.get('datetime')
+    test_id = data.get('test_id')    
+    datetime_str = data.get("datetime")
+    if not emails or not test_id or not datetime_str:
+        return JsonResponse({"status": "error", "message": "Missing data"})
+        
+    scheduled_time = parse_datetime(datetime_str)
+    if timezone.is_naive(scheduled_time):
+        scheduled_time = timezone.make_aware(scheduled_time)
 
     test = newTest.objects.get(id=test_id)
 
     for email in emails:
-        attempt = TestAttempt.objects.create(test=test, email=email)
+        attempt = TestAttempt.objects.create(test=test, email=email, scheduled_at=scheduled_time)
 
         link = f"http://127.0.0.1:8000/assessment-test/{attempt.token}/"
 
-        final_message = message + f"\n\nTest Link: {link}"
         final_message = message.replace(
             "[Will add automatically]",
             link
@@ -234,25 +242,6 @@ def send_emails(request):
 
     return JsonResponse({"status": "success"})
         
-def send_single_email(request):
-    data = json.loads(request.body)
-
-    email = data.get('email')
-    subject = data.get('subject')
-    message = data.get('message')
-
-    if not email or not subject or not message:
-        return JsonResponse({'status': 'error', 'message': 'Missing data'})
-
-    send_mail(
-        subject,
-        message,
-        EMAIL_HOST_USER,
-        [email],
-        fail_silently=False,
-    )
-
-    return JsonResponse({'status': 'success'})
         
 def create_attempts(request):
     data = json.loads(request.body)
@@ -261,11 +250,16 @@ def create_attempts(request):
     emails = data.get('emails')
 
     test = newTest.objects.get(id=test_id)
+    
+    datetime_str = data.get("datetime")
+    scheduled_time = parse_datetime(datetime_str)
+    if timezone.is_naive(scheduled_time):
+        scheduled_time = timezone.make_aware(scheduled_time)
 
     attempts = []
 
     for email in emails:
-        attempt = TestAttempt.objects.create(test=test, email=email)
+        attempt = TestAttempt.objects.create(test=test, email=email, scheduled_at=scheduled_time)
 
         link = f"http://127.0.0.1:8000/assessment-test/{attempt.token}/"
 

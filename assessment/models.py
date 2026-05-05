@@ -11,6 +11,7 @@ class TestAttempt(models.Model):
     token = models.UUIDField(default=uuid.uuid4, unique=True)
     score = models.IntegerField(default=0)
     status = models.CharField(default='pending', max_length=20)
+    scheduled_at = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):

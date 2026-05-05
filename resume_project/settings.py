@@ -158,3 +158,6 @@ GROQ_API_KEY = config('GROQ_API_KEY')
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
 }
+
+USE_TZ = True
+TIME_ZONE = 'Asia/Kolkata'

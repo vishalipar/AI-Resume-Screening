@@ -3,6 +3,7 @@ from .models import TestAttempt, Answer
 from organize_test.models import QuestionModel
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from datetime import timedelta
 # Create your views here.
 
 def assessment_test(request, token):
@@ -10,17 +11,34 @@ def assessment_test(request, token):
         attempt = TestAttempt.objects.get(token=token)
     except TestAttempt.DoesNotExist:
         return HttpResponse("Invalid or expired link")
+        
+    now = timezone.now()
+    start_time = attempt.scheduled_at 
+    if not start_time:
+        return HttpResponse("Test schedule not set")
+    end_time = start_time + timedelta(minutes=attempt.test.duration)
 
     request.session['attempt_id'] = attempt.id
     request.session['is_candidate'] = True
 
     return render(request, 'assessment_test.html', {
         'test': attempt.test,
-        'attempt': attempt
+        'attempt': attempt,
+        "start_time": start_time,
+        "end_time": end_time,
+        "now": now
     })
     
 def start_test(request, token):
     attempt = get_object_or_404(TestAttempt, token=token)
+    
+    if timezone.is_naive(attempt.scheduled_at):
+        attempt_time = timezone.make_aware(attempt.scheduled_at)
+    else:
+        attempt_time = attempt.scheduled_at
+
+    if timezone.now() < attempt_time:
+        return HttpResponse("Test not started yet")
 
     if attempt.status == "submitted":
         return HttpResponse("You have already completed this test.")

@@ -50,18 +50,66 @@
         </p>
         <p class="font-semibold text-gray-800">{{ attempt.email }}</p>
     </div>
+    
+    <div class="mb-6 p-4 bg-yellow-50 border rounded">
+        <p class="text-sm text-gray-600">Test starts at: {{ start_time }}</p>
+
+        <h1 id="countdown" class="text-xl font-bold text-red-600 mt-2"></h1>
+    </div>
 
     <!-- Start Button -->
     <div class="flex justify-end">
         <form method="POST" action="{% url 'start_test' attempt.token %}">
             {% csrf_token %}
-            <button type="submit"
-                class="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:bg-blue-700">
+            <button id="startBtn" type="submit" disabled
+                class="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:bg-blue-700 cursor-not-allowed">
                 Start Test
             </button>
         </form>
     </div>
 </div>
+
+<script>
+    const startTime = new Date("{{ start_time|date:'Y-m-d H:i:s' }}").getTime();
+    let now = new Date().getTime();
+
+    let timeLeft = Math.floor((startTime - now) / 1000);
+
+    const countdownEl = document.getElementById("countdown");
+    const startBtn = document.getElementById("startBtn");
+
+    function startCountdown(){
+
+        const interval = setInterval(() => {
+
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                enableStart();
+                return;
+            }
+
+            let h = Math.floor(timeLeft / 3600);
+            let m = Math.floor((timeLeft % 3600) / 60);
+            let s = timeLeft % 60;
+
+            countdownEl.innerText = `${h}h ${m}m ${s}s`;
+
+            timeLeft--;
+
+        }, 1000);
+    }
+
+    function enableStart(){
+        countdownEl.innerText = "Test is now available!";
+
+        startBtn.disabled = false;
+
+        startBtn.classList.remove("bg-gray-400", "cursor-not-allowed");
+        startBtn.classList.add("bg-blue-700", "hover:bg-blue-800", "cursor-pointer");
+    }
+
+    startCountdown();
+</script>
 
 </body>
 </html>
