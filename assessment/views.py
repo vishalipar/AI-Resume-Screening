@@ -12,6 +12,9 @@ def assessment_test(request, token):
     except TestAttempt.DoesNotExist:
         return HttpResponse("Invalid or expired link")
         
+    if timezone.now() > attempt.scheduled_at + timedelta(hours=12):
+        return HttpResponse("This test link has expired.")
+        
     now = timezone.now()
     start_time = attempt.scheduled_at 
     if not start_time:
