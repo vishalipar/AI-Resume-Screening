@@ -59,7 +59,7 @@
 
     <!-- Start Button -->
     <div class="flex justify-end">
-        <form method="POST" action="{% url 'start_test' attempt.token %}">
+        <form id="startForm" method="POST" action="{% url 'start_test' attempt.token %}">
             {% csrf_token %}
             <button id="startBtn" type="submit" disabled
                 class="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:bg-blue-700 cursor-not-allowed">
@@ -110,6 +110,38 @@
 
     startCountdown();
 </script>
+<script>
+    document.getElementById("startForm").addEventListener("submit", async function(e){
+    
+        e.preventDefault();
+    
+        try {
+    
+            // ask webcam permission
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false
+            });
+    
+            // stop webcam immediately
+            stream.getTracks().forEach(track => track.stop());
+    
+            // ✅ permission granted -> start test
+            this.submit();
+    
+        }
+    
+        catch(err){
+    
+            alert(
+                "Camera permission is mandatory to start the test.\n\n" +
+                "Please allow camera access."
+            );
+        }
+    
+    });
+    
+    </script>
 
 </body>
 </html>

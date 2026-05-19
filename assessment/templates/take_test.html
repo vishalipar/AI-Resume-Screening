@@ -3,11 +3,32 @@
 <head>
     <title>{{ test.title }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 
 <body class="bg-gray-100">
 
 <div class="max-w-4xl mx-auto my-10 bg-white shadow-sm rounded-2xl p-8">
+    <div class="mb-6 p-4 border rounded-xl bg-white shadow-sm">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="font-semibold text-gray-700">
+                AI Proctoring Camera
+            </h3>
+    
+            <span id="warningCount"
+                class="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-lg">
+                Warnings: 0
+            </span>
+        </div>
+    
+        <video id="video"
+            autoplay
+            muted
+            class="w-64 h-48 rounded-lg border object-cover bg-black">
+        </video>
+    
+        <p id="warningMessage" class="mt-3 text-red-600 font-medium"></p>
+    </div>
     <!-- Header -->
     <div class="flex justify-between items-center border-b pb-4 mb-6 w-full">
         <div class="p-4 mb-6 bg-blue-50 border rounded-lg w-full">
@@ -136,5 +157,97 @@
     
         startTimer();
     });
+</script>
+    <script>
+        const video = document.getElementById("video");
+        const warningMessage = document.getElementById("warningMessage");
+        const warningCountEl = document.getElementById("warningCount");
+    
+        let warnings = 0;
+        let faceMissingSeconds = 0;
+    
+        // Open webcam
+        async function startWebcam() {
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+        });
+
+        video.srcObject = stream;
+        return true;
+
+    } catch (err) {
+
+        alert(
+            "Webcam access is required.\n\n" +
+            "Please allow camera permission from browser settings and refresh the page."
+        );
+
+        // disable test
+        document.getElementById("submitBtn").disabled = true;
+
+        return false;
+    }
+}
+    
+        // Load AI model
+        async function loadModels() {
+            await faceapi.nets.tinyFaceDetector.loadFromUri('/static/models');
+        }
+    
+        // Detect face
+        async function detectFace() {
+    
+            setInterval(async () => {
+    
+                const detection = await faceapi.detectSingleFace(
+                    video,
+                    new faceapi.TinyFaceDetectorOptions()
+                );
+    
+                // No face detected
+                if (!detection) {
+                    faceMissingSeconds++;
+    
+                    warningMessage.innerText =
+                        "Face not detected. Please stay in front of camera.";
+    
+                    // every 5 sec no face => warning
+                    if (faceMissingSeconds >= 5) {
+                        warnings++;
+    
+                        warningCountEl.innerText =
+                            `Warnings: ${warnings}`;
+    
+                        faceMissingSeconds = 0;
+                    }
+    
+                    // auto submit after 3 warnings
+                    if (warnings >= 3) {
+                        alert("Too many warnings. Test auto-submitted.");
+                        document.getElementById("testForm").submit();
+                    }
+                }
+    
+                // Face detected
+                else {
+                    faceMissingSeconds = 0;
+                    warningMessage.innerText = "";
+                }
+    
+            }, 1000);
+        }
+    
+        // Start everything ONLY after page loads
+        window.addEventListener("load", async () => {
+            const webcamStarted = await startWebcam();
+
+            if (webcamStarted) {
+                await loadModels();
+                detectFace();
+            }
+                    });
     </script>
 </html>
